@@ -1,6 +1,5 @@
 <script setup>
 import MainLayout from "@/Layouts/MainLayout.vue";
-// import PublicRequestForm from "@/Components/PublicRequestForm.vue";
 import { Input } from "@/Components/ui/input/index.js";
 import { Label } from "@/Components/ui/label/index.js";
 import {
@@ -17,17 +16,118 @@ import {
 import { Textarea } from "@/Components/ui/textarea/index.js";
 import { Button } from "@/Components/ui/button/index.js";
 import { CirclePlus } from "lucide-vue-next";
+import { ref, computed, watch, reactive } from "vue";
+import { router, usePage } from "@inertiajs/vue3";
+
+const isSubmitting = ref(false);
+const showSuccessModal = ref(false);
+
+const page = usePage();
+const trackingCode = computed(() => page.props.flash?.ticket_code);
+
+// Form data
+const form = reactive({
+    nama: "",
+    email: "",
+    telepon: "",
+    kodepos: "",
+    alamat: "",
+    pekerjaan: "",
+    instansi: "",
+    tujuan: "",
+    cara_pengajuan: "langsung",
+    detail_data: "",
+    cara_pengambilan: "salinan",
+    cara_penyerahan: "",
+
+    surat_permohonan: null,
+    lampiran: [],
+});
+
+const fileName = ref("");
+const lampiran = ref([]);
+
+const fileInput = ref(null);
+const lampiranFile = ref([]);
+
+const submit = () => {
+    isSubmitting.value = true;
+    // Prepare FormData if file upload is needed
+    const data = new FormData();
+    Object.entries(form).forEach(([key, value]) => {
+        if (key === "lampiran") {
+            lampiran.value.forEach((item, idx) => {
+                if (item.file) data.append(`lampiran[${idx}]`, item.file);
+            });
+        } else if (key === "surat_permohonan" && form.surat_permohonan) {
+            data.append("surat_permohonan", form.surat_permohonan);
+        } else {
+            data.append(key, value);
+        }
+    });
+
+    router.post(route("landing.post"), data, {
+        preserveScroll: true,
+        forceFormData: true,
+        onFinish: () => {
+            isSubmitting.value = false;
+        },
+        onSuccess: () => {
+            showSuccessModal.value = true;
+        },
+    });
+};
+
+const triggerFileUpload = () => fileInput.value?.click();
+const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    fileName.value = file ? file.name : "";
+    form.surat_permohonan = file || null;
+};
+
+const addInputField = () => {
+    lampiran.value.push({
+        id: Date.now() + Math.random(),
+        fileName: "",
+        file: null,
+    });
+};
+
+const triggerLampiranUpload = (index) => {
+    lampiranFile.value[index]?.click();
+};
+
+const handleLampiranFileChange = (event, index) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    lampiran.value[index].fileName = file.name;
+    lampiran.value[index].file = file;
+    form.lampiran = lampiran.value;
+};
+
+const removeLampiran = (index) => {
+    lampiran.value.splice(index, 1);
+    form.lampiran = lampiran.value;
+};
+
+watch(
+    () => page.props.flash?.ticket_code,
+    (val) => {
+        if (val) {
+            showSuccessModal.value = true;
+        }
+    }
+);
 </script>
 
 <template>
     <MainLayout>
-        <!-- hero section form -->
+        <!-- Hero Section -->
         <section
             class="relative h-[360px] bg-cover bg-center"
             style="background-image: url('/images/pulauPulauKecil.jpg')"
         >
             <div class="absolute inset-0 bg-black/40"></div>
-
             <div class="relative z-10 max-w-7xl mx-auto px-6 py-24 text-white">
                 <h1 class="text-4xl font-bold mb-4">Pengajuan Formulir</h1>
                 <p class="max-w-xl text-sm">
@@ -43,12 +143,16 @@ import { CirclePlus } from "lucide-vue-next";
                 Permohonan Data Informasi Publik
             </h2>
 
-            <PublicRequestForm />
-            <form class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <form
+                @submit.prevent="submit"
+                class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"
+            >
                 <div>
-                    <Label for="nama">Nama</Label>
+                    <Label for="name">Nama</Label>
                     <Input
-                        id="nama"
+                        id="name"
+                        v-model="form.name"
+                        name="name"
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan nama lengkap anda"
                     />
@@ -57,107 +161,123 @@ import { CirclePlus } from "lucide-vue-next";
                     <Label for="email">Surel</Label>
                     <Input
                         id="email"
+                        v-model="form.email"
+                        name="email"
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan surel anda"
                     />
                 </div>
                 <div>
-                    <Label for="telepon">No. Telepon</Label>
+                    <Label for="telp">No. Telepon</Label>
                     <Input
-                        id="telepon"
+                        id="telp"
+                        name="telp"
+                        v-model="form.telp"
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan nomor telepon anda"
                     />
                 </div>
                 <div>
-                    <Label for="kodepos">Kode Pos</Label>
+                    <Label for="postal_code">Kode Pos</Label>
                     <Input
-                        id="kodepos"
+                        id="postal_code"
+                        name="postal_code"
+                        v-model="form.postal_code"
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan kode pos anda"
                     />
                 </div>
-                <div class="">
+                <div>
                     <Label>Alamat</Label>
                     <Textarea
                         rows="5"
+                        v-model="form.address"
+                        name="address"
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan alamat lengkap anda"
                     />
                 </div>
-                <div class="">
+                <div>
                     <div class="mb-4">
-                        <Label for="pekerjaan">Pekerjaan</Label>
+                        <Label for="job">Pekerjaan</Label>
                         <Input
-                            id="pekerjaan"
+                            id="job"
+                            name="job"
+                            v-model="form.job"
                             class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                             placeholder="Masukkan pekerjaan anda"
                         />
                     </div>
                     <div>
-                        <Label for="instansi">Instansi</Label>
+                        <Label for="institute">Instansi</Label>
                         <Input
-                            id="instansi"
+                            id="institute"
+                            name="institute"
+                            v-model="form.institute"
                             class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                             placeholder="Masukkan instansi anda"
                         />
                     </div>
                 </div>
-
                 <div>
                     <Label for="tujuan">Tujuan Penggunaan Data</Label>
                     <Input
                         id="tujuan"
+                        name="data_purpose"
+                        v-model="form.data_purpose"
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan tujuan penggunaan data anda"
                     />
                 </div>
-                <div class="">
-                    <label for="RadioGroup">Cara Pengajuan</label>
-                    <RadioGroup default-value="langsung" class="space-y-2">
+                <div>
+                    <Label>Cara Pengajuan</Label>
+                    <RadioGroup v-model="form.submit_data" class="space-y-2">
                         <div class="flex items-center space-x-2">
-                            <RadioGroupItem value="langsung" id="langsung" />
+                            <RadioGroupItem value="Langsung" id="langsung" />
                             <Label for="langsung">Langsung</Label>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <RadioGroupItem value="tidak" id="tidak" />
+                            <RadioGroupItem value="Tidak Langsung" id="tidak" />
                             <Label for="tidak">Tidak Langsung</Label>
                         </div>
                     </RadioGroup>
                 </div>
-
-                <div class="">
+                <div>
                     <Label>Detail Data Yang Di Butuhkan</Label>
                     <Textarea
                         rows="5"
+                        v-model="form.details_data"
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan detail data yang anda butuhkan"
                     />
                 </div>
-
-                <div class="">
+                <div>
                     <div class="mb-4">
-                        <label for="RadioGroup">Cara Pengambilan Data</label>
-                        <RadioGroup default-value="salinan" class="space-y-2">
+                        <Label>Cara Pengambilan Data</Label>
+                        <RadioGroup v-model="form.get_doc" class="space-y-2">
                             <div class="flex items-center space-x-2">
-                                <RadioGroupItem value="Salinan" id="salinan" />
+                                <RadioGroupItem
+                                    value="Salinan (softcopy/hardcopy)"
+                                    id="salinan"
+                                />
                                 <Label for="salinan"
                                     >Salinan (SoftCopy/HardCopy)</Label
                                 >
                             </div>
                             <div class="flex items-center space-x-2">
-                                <RadioGroupItem value="melihat" id="melihat" />
+                                <RadioGroupItem
+                                    value="Melihat/membaca/mendengarkan/mencatat"
+                                    id="melihat"
+                                />
                                 <Label for="melihat"
                                     >Melihat/Membaca/Mendengarkan/Mencatat</Label
                                 >
                             </div>
                         </RadioGroup>
                     </div>
-
                     <div>
                         <Label>Cara Penyerahan</Label>
-
-                        <Select>
+                        <Select v-model="form.send_doc">
                             <SelectTrigger>
                                 <SelectValue
                                     class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
@@ -165,22 +285,23 @@ import { CirclePlus } from "lucide-vue-next";
                                 />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="email">Email</SelectItem>
-                                <SelectItem value="langsung"
+                                <SelectItem value="Email">Email</SelectItem>
+                                <SelectItem value="Langsung"
                                     >Langsung</SelectItem
                                 >
+                                <SelectItem value="Pos">Pos</SelectItem>
+                                <SelectItem value="Kurir">Kurir</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
                 </div>
-
                 <div class="md:col-span-2">
                     <Label>Surat Permohonan</Label>
-
                     <div class="flex gap-2">
                         <input
                             ref="fileInput"
                             type="file"
+                            accept="application/pdf"
                             class="hidden"
                             @change="handleFileChange"
                         />
@@ -202,8 +323,6 @@ import { CirclePlus } from "lucide-vue-next";
                         </div>
                     </div>
                 </div>
-
-                <!-- LAMPIRAN DINAMIS -->
                 <div
                     v-for="(item, index) in lampiran"
                     :key="item.id"
@@ -247,7 +366,6 @@ import { CirclePlus } from "lucide-vue-next";
                         </div>
                     </div>
                 </div>
-
                 <div class="flex justify-center md:col-span-2 mt-4">
                     <Button
                         type="button"
@@ -259,54 +377,62 @@ import { CirclePlus } from "lucide-vue-next";
                         <CirclePlus />
                     </Button>
                 </div>
-
                 <div class="md:col-span-2 mt-10">
-                    <Button class="hover:bg-primary-dark px-24"> Kirim </Button>
+                    <Button
+                        class="hover:bg-primary-dark px-24"
+                        type="submit"
+                        :disabled="isSubmitting"
+                    >
+                        Kirim
+                    </Button>
                 </div>
             </form>
         </section>
     </MainLayout>
+
+    <!-- Loading Dialog -->
+    <Dialog :open="isSubmitting">
+        <DialogOverlay class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+        <DialogContent
+            class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-xl bg-white p-6 pointer-events-none"
+        >
+            <h3 class="text-lg font-semibold">Permintaan Data</h3>
+            <img
+                src="/images/prosesicon.svg"
+                class="mx-auto my-6 h-40"
+                alt="loading"
+            />
+            <p class="text-center text-sm text-muted-foreground">
+                Sedang Mengirim Data ...
+            </p>
+        </DialogContent>
+    </Dialog>
+
+    <!-- Success Dialog -->
+    <Dialog v-model:open="showSuccessModal">
+        <DialogOverlay class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+        <DialogContent
+            class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-xl bg-white p-6"
+        >
+            <h3 class="text-lg font-semibold">Permintaan Data</h3>
+            <img
+                src="/images/success_prosses.svg"
+                class="mx-auto my-6 h-40"
+                alt="success"
+            />
+            <p class="text-center">
+                Permintaan data anda berhasil dikirimkan, berikut kode tracking
+                formulir anda
+            </p>
+            <p class="text-center text-2xl font-bold mt-4">
+                {{ trackingCode }}
+            </p>
+            <p class="text-xs text-muted-foreground text-center mt-3">
+                Periksa email anda atau hubungi no. 000000000
+            </p>
+            <Button class="mt-6 w-full" @click="showSuccessModal = false">
+                Selesai
+            </Button>
+        </DialogContent>
+    </Dialog>
 </template>
-
-<script>
-export default {
-    data() {
-        return {
-            fileName: "",
-            lampiran: [], // daftar lampiran
-        };
-    },
-    methods: {
-        // surat permohonan utama
-        triggerFileUpload() {
-            this.$refs.fileInput.click();
-        },
-        handleFileChange(event) {
-            const file = event.target.files[0];
-            this.fileName = file ? file.name : "";
-        },
-
-        // lampiran dinamis
-        addInputField() {
-            this.lampiran.push({
-                id: Date.now() + Math.random(),
-                fileName: "",
-                file: null,
-            });
-        },
-        triggerLampiranUpload(index) {
-            const input = this.$refs.lampiranFile?.[index];
-            if (input) input.click();
-        },
-        handleLampiranFileChange(event, index) {
-            const file = event.target.files[0];
-            if (!file) return;
-            this.lampiran[index].fileName = file.name;
-            this.lampiran[index].file = file;
-        },
-        removeLampiran(index) {
-            this.lampiran.splice(index, 1);
-        },
-    },
-};
-</script>

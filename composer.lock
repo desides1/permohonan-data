@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d064a6f8ffb13984fc06baf601d97786",
+    "content-hash": "d0229e7b6fd123ae72f20f9d1e33c248",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3890,44 +3890,50 @@
             "time": "2025-09-04T20:59:21+00:00"
         },
         {
-            "name": "ringlesoft/laravel-process-approval",
-            "version": "1.1.4",
+            "name": "spatie/laravel-permission",
+            "version": "6.24.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/ringlesoft/laravel-process-approval.git",
-                "reference": "f4567e185cc302244e39d14e230c2793bf4b636b"
+                "url": "https://github.com/spatie/laravel-permission.git",
+                "reference": "76adb1fc8d07c16a0721c35c4cc330b7a12598d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ringlesoft/laravel-process-approval/zipball/f4567e185cc302244e39d14e230c2793bf4b636b",
-                "reference": "f4567e185cc302244e39d14e230c2793bf4b636b",
+                "url": "https://api.github.com/repos/spatie/laravel-permission/zipball/76adb1fc8d07c16a0721c35c4cc330b7a12598d7",
+                "reference": "76adb1fc8d07c16a0721c35c4cc330b7a12598d7",
                 "shasum": ""
             },
             "require": {
-                "illuminate/auth": "^10|^11|^12",
-                "illuminate/broadcasting": "^10|^11|^12",
-                "illuminate/database": "^10|^11|^12",
-                "illuminate/routing": "^10|^11|^12",
-                "php": ">=8.1"
+                "illuminate/auth": "^8.12|^9.0|^10.0|^11.0|^12.0",
+                "illuminate/container": "^8.12|^9.0|^10.0|^11.0|^12.0",
+                "illuminate/contracts": "^8.12|^9.0|^10.0|^11.0|^12.0",
+                "illuminate/database": "^8.12|^9.0|^10.0|^11.0|^12.0",
+                "php": "^8.0"
             },
             "require-dev": {
-                "roave/security-advisories": "dev-latest"
+                "laravel/passport": "^11.0|^12.0",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^6.23|^7.0|^8.0|^9.0|^10.0",
+                "phpunit/phpunit": "^9.4|^10.1|^11.5"
             },
-            "type": "laravel-package",
+            "type": "library",
             "extra": {
                 "laravel": {
-                    "aliases": {
-                        "ProcessApproval": "RingleSoft\\LaravelProcessApproval\\Facade"
-                    },
                     "providers": [
-                        "RingleSoft\\LaravelProcessApproval\\LaravelProcessApprovalServiceProvider"
-                    ],
-                    "dont-discover": []
+                        "Spatie\\Permission\\PermissionServiceProvider"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "6.x-dev",
+                    "dev-master": "6.x-dev"
                 }
             },
             "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
                 "psr-4": {
-                    "RingleSoft\\LaravelProcessApproval\\": "src/"
+                    "Spatie\\Permission\\": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -3936,27 +3942,35 @@
             ],
             "authors": [
                 {
-                    "name": "David Ringle",
-                    "email": "ringunger@gmail.com",
-                    "homepage": "https://ringlesoft.com",
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "homepage": "https://spatie.be",
                     "role": "Developer"
                 }
             ],
-            "description": "A package to handle process approval flow in a laravel application.",
-            "homepage": "https://ringlesoft.com/packages/laravel-process-approval",
+            "description": "Permission handling for Laravel 8.0 and up",
+            "homepage": "https://github.com/spatie/laravel-permission",
             "keywords": [
-                "approval",
-                "approve",
-                "flow",
+                "acl",
                 "laravel",
-                "procedure",
-                "ringlesoft"
+                "permission",
+                "permissions",
+                "rbac",
+                "roles",
+                "security",
+                "spatie"
             ],
             "support": {
-                "issues": "https://github.com/ringlesoft/laravel-process-approval/issues",
-                "source": "https://github.com/ringlesoft/laravel-process-approval/tree/1.1.4"
+                "issues": "https://github.com/spatie/laravel-permission/issues",
+                "source": "https://github.com/spatie/laravel-permission/tree/6.24.0"
             },
-            "time": "2025-12-19T13:18:18+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/spatie",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-12-13T21:45:21+00:00"
         },
         {
             "name": "symfony/clock",
