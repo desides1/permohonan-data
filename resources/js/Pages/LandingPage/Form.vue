@@ -18,6 +18,7 @@ import { Button } from "@/Components/ui/button/index.js";
 import { CirclePlus } from "lucide-vue-next";
 import { ref, computed, watch, reactive } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
+import InputError from "@/Components/InputError.vue";
 
 const isSubmitting = ref(false);
 const showSuccessModal = ref(false);
@@ -36,7 +37,7 @@ const form = reactive({
     instansi: "",
     tujuan: "",
     cara_pengajuan: "langsung",
-    detail_data: "",
+    details_data: "",
     cara_pengambilan: "salinan",
     cara_penyerahan: "",
 
@@ -146,6 +147,7 @@ watch(
             <form
                 @submit.prevent="submit"
                 class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"
+                method="POST"
             >
                 <div>
                     <Label for="name">Nama</Label>
@@ -156,6 +158,7 @@ watch(
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan nama lengkap anda"
                     />
+                    <InputError :message="page.props.errors.name" />
                 </div>
                 <div>
                     <Label for="email">Surel</Label>
@@ -166,6 +169,7 @@ watch(
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan surel anda"
                     />
+                    <InputError :message="page.props.errors.email" />
                 </div>
                 <div>
                     <Label for="telp">No. Telepon</Label>
@@ -176,6 +180,7 @@ watch(
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan nomor telepon anda"
                     />
+                    <InputError :message="page.props.errors.telp" />
                 </div>
                 <div>
                     <Label for="postal_code">Kode Pos</Label>
@@ -186,6 +191,7 @@ watch(
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan kode pos anda"
                     />
+                    <InputError :message="page.props.errors.postal_code" />
                 </div>
                 <div>
                     <Label>Alamat</Label>
@@ -196,6 +202,7 @@ watch(
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan alamat lengkap anda"
                     />
+                    <InputError :message="page.props.errors.address" />
                 </div>
                 <div>
                     <div class="mb-4">
@@ -207,6 +214,7 @@ watch(
                             class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                             placeholder="Masukkan pekerjaan anda"
                         />
+                        <InputError :message="page.props.errors.job" />
                     </div>
                     <div>
                         <Label for="institute">Instansi</Label>
@@ -217,6 +225,7 @@ watch(
                             class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                             placeholder="Masukkan instansi anda"
                         />
+                        <InputError :message="page.props.errors.institute" />
                     </div>
                 </div>
                 <div>
@@ -228,6 +237,7 @@ watch(
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan tujuan penggunaan data anda"
                     />
+                    <InputError :message="page.props.errors.data_purpose" />
                 </div>
                 <div>
                     <Label>Cara Pengajuan</Label>
@@ -241,6 +251,7 @@ watch(
                             <Label for="tidak">Tidak Langsung</Label>
                         </div>
                     </RadioGroup>
+                    <InputError :message="page.props.errors.submit_data" />
                 </div>
                 <div>
                     <Label>Detail Data Yang Di Butuhkan</Label>
@@ -250,6 +261,7 @@ watch(
                         class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan detail data yang anda butuhkan"
                     />
+                    <InputError :message="page.props.errors.details_data" />
                 </div>
                 <div>
                     <div class="mb-4">
@@ -274,6 +286,7 @@ watch(
                                 >
                             </div>
                         </RadioGroup>
+                        <InputError :message="page.props.errors.get_doc" />
                     </div>
                     <div>
                         <Label>Cara Penyerahan</Label>
@@ -292,6 +305,7 @@ watch(
                                 <SelectItem value="Pos">Pos</SelectItem>
                                 <SelectItem value="Kurir">Kurir</SelectItem>
                             </SelectContent>
+                            <InputError :message="page.props.errors.send_doc" />
                         </Select>
                     </div>
                 </div>
@@ -322,6 +336,7 @@ watch(
                             </Button>
                         </div>
                     </div>
+                    <InputError :message="page.props.errors.surat_permohonan" />
                 </div>
                 <div
                     v-for="(item, index) in lampiran"
@@ -348,6 +363,7 @@ watch(
                                 readonly
                                 @click="triggerLampiranUpload(index)"
                             />
+                            <InputError :message="page.props.errors.lampiran" />
                             <Button
                                 type="button"
                                 class="rounded-l-none bg-lime-300 hover:bg-lime-400"

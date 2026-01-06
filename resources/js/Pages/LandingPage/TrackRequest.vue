@@ -2,6 +2,7 @@
 import MainLayout from "@/Layouts/MainLayout.vue";
 import { ref, computed, watch } from "vue";
 import { usePage, useForm } from "@inertiajs/vue3";
+import Input from "@/Components/ui/input/Input.vue";
 
 const page = usePage();
 
@@ -47,6 +48,7 @@ const submitTracking = () => {
                 <form
                     @submit.prevent="submitTracking"
                     class="flex flex-col items-center space-y-4"
+                    method="POST"
                 >
                     <div class="w-full flex flex-col items-center space-y-1">
                         <label
@@ -61,9 +63,9 @@ const submitTracking = () => {
                             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-center focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                             placeholder="Masukkan nomor permohonan Anda"
                         />
+                        <InputError :message="page.props.errors.ticket_code" />
                     </div>
                     <button
-                        type="submit"
                         class="bg-primary hover:bg-primary-dark text-white rounded-lg px-12 py-2"
                     >
                         Lacak
@@ -118,8 +120,13 @@ const submitTracking = () => {
             </div>
         </section>
 
-        <p v-if="error" class="text-red-500 text-center">
-            {{ error }}
-        </p>
+        <div
+            class="flex justify-center items-center my-4 mx-32 border border-lime-200 bg-slate-100 p-4 rounded"
+            v-if="error"
+        >
+            <p v-if="error" class="text-red-500 text-center">
+                {{ error }}
+            </p>
+        </div>
     </MainLayout>
 </template>

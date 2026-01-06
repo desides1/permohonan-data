@@ -19,6 +19,23 @@ class RequestController extends Controller
 
     public function postRequest(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'telp' => 'required|string|max:20',
+            'job' => 'required|string|max:255',
+            'postal_code' => 'required|string|max:10',
+            'institute' => 'required|string|max:255',
+            'address' => 'required|string|max:500',
+            'submit_data' => 'required|string',
+            'get_doc' => 'required|string',
+            'send_doc' => 'required|string',
+            'data_purpose' => 'required|string|max:500',
+            'details_data' => 'nullable|string|max:1000',
+            'surat_permohonan' => 'required|file|mimes:pdf|max:2048',
+            'lampiran.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5048',
+        ]);
+
         $data = [
             'name' => $request->input('name'),
             'email' => $request->input('email'),
@@ -81,7 +98,7 @@ class RequestController extends Controller
         $ticket = Ticket::where('ticket_code', $request->ticket_code)->with('detail')->first();
 
         if (!$ticket) {
-            return redirect()->back()->with('ticket', $ticket);
+            return redirect()->back()->with('ticket', $ticket)->with('error', 'Kode tiket tidak ditemukan.');
         }
 
         return Inertia::render('LandingPage/TrackRequest', [
