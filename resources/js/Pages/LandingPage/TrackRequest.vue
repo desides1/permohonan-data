@@ -46,7 +46,6 @@ const submitTracking = () => {
             <div class="w-full max-w-md text-center">
                 <h1 class="text-2xl font-bold mb-4">Lacak Data Permohonan</h1>
                 <form
-                    @submit.prevent="submitTracking"
                     class="flex flex-col items-center space-y-4"
                     method="POST"
                 >
@@ -67,6 +66,7 @@ const submitTracking = () => {
                     </div>
                     <button
                         class="bg-primary hover:bg-primary-dark text-white rounded-lg px-12 py-2"
+                        @submit.prevent="submitTracking"
                     >
                         Lacak
                     </button>
@@ -125,7 +125,7 @@ const submitTracking = () => {
             v-if="error"
         >
             <p v-if="error" class="text-red-500 text-center">
-                {{ error }}
+                {{ form.errors.ticket_number }}
             </p>
         </div>
     </MainLayout>

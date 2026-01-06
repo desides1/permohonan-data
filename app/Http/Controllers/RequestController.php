@@ -98,7 +98,9 @@ class RequestController extends Controller
         $ticket = Ticket::where('ticket_code', $request->ticket_code)->with('detail')->first();
 
         if (!$ticket) {
-            return redirect()->back()->with('ticket', $ticket)->with('error', 'Kode tiket tidak ditemukan.');
+            return redirect()
+                ->route('ticket.track.form')
+                ->with('error', 'Kode tiket tidak ditemukan.');
         }
 
         return Inertia::render('LandingPage/TrackRequest', [

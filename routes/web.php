@@ -11,7 +11,7 @@ use App\Http\Controllers\RequestController;
 Route::get('/', fn() => Inertia::render('LandingPage/Home'));
 Route::get('/formulir', [RequestController::class, 'showRequest'])->name('landing.form');
 Route::post('/mengirim', [RequestController::class, 'postRequest'])->name('landing.post');
-Route::get('/lacak', fn() => Inertia::render('LandingPage/TrackRequest'));
+Route::get('/lacak', fn() => Inertia::render('LandingPage/TrackRequest'))->name('ticket.track.form');
 Route::post('/track-ticket', [RequestController::class, 'trackTicket'])->name('ticket.track');
 Route::get('/bantuan', fn() => Inertia::render('LandingPage/FAQ'));
 
