@@ -8,7 +8,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Str;
 use App\Models\Ticket;
 use App\Models\Attachment;
-
+use Illuminate\Validation\ValidationException;
 
 class RequestController extends Controller
 {
@@ -98,9 +98,9 @@ class RequestController extends Controller
         $ticket = Ticket::where('ticket_code', $request->ticket_code)->with('detail')->first();
 
         if (!$ticket) {
-            return redirect()
-                ->route('ticket.track.form')
-                ->with('error', 'Kode tiket tidak ditemukan.');
+            throw ValidationException::withMessages([
+                'ticket_code' => 'Kode tiket tidak ditemukan. Silakan periksa kembali.',
+            ]);
         }
 
         return Inertia::render('LandingPage/TrackRequest', [

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TicketReply extends Model
 {
-    protected $fillable = ['user_id', 'ticket_id', 'content'];
+    protected $fillable = ['replied_by', 'ticket_id', 'content'];
 
     public function ticket()
     {

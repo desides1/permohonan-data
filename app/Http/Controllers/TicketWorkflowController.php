@@ -3,19 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Enums\TicketStatus;
+use App\Enums\TicketAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TicketWorkflowController extends Controller
 {
     use AuthorizesRequests;
+
     public function verify(Ticket $ticket)
     {
         $this->authorize('verify', $ticket);
 
         $ticket->update([
-            'status' => 'Diverifikasi oleh admin TU',
-            'assignment' => 'Pimpinan',
+            'status' => TicketStatus::VERIFIED,
+            'assignment' => TicketAssignment::PIMPINAN_BPKH,
         ]);
 
         return back()->with('success', 'Tiket diverifikasi.');
@@ -26,8 +29,8 @@ class TicketWorkflowController extends Controller
         $this->authorize('approve', $ticket);
 
         $ticket->update([
-            'status' => 'Di setujui oleh pimpinan',
-            'assignment' => 'Admin TU',
+            'status' => TicketStatus::APPROVED,
+            'assignment' => TicketAssignment::PIMPINAN_PPKH,
         ]);
 
         return back()->with('success', 'Tiket disetujui pimpinan.');
@@ -42,7 +45,7 @@ class TicketWorkflowController extends Controller
         ]);
 
         $ticket->update([
-            'status' => 'Di tolak',
+            'status' => TicketStatus::REJECTED,
             'assignment' => null,
         ]);
 
@@ -53,28 +56,19 @@ class TicketWorkflowController extends Controller
         return back()->with('error', 'Permohonan ditolak.');
     }
 
-    public function assignSeksi1(Ticket $ticket)
+    /**
+     * SATU pintu assignment Seksi
+     */
+    public function assignSeksi(Ticket $ticket)
     {
-        $this->authorize('assignSeksi1', $ticket);
+        $this->authorize('assignSeksi', $ticket);
 
         $ticket->update([
-            'status' => 'Ditugaskan ke penyedia 1',
-            'assignment' => 'Seksi 1',
+            'status' => TicketStatus::ASSIGNED,
+            'assignment' => TicketAssignment::SEKSI,
         ]);
 
-        return back()->with('success', 'Ditugaskan ke Seksi 1.');
-    }
-
-    public function assignSeksi2(Ticket $ticket)
-    {
-        $this->authorize('assignSeksi2', $ticket);
-
-        $ticket->update([
-            'status' => 'Ditugaskan ke penyedia 2',
-            'assignment' => 'Seksi 2',
-        ]);
-
-        return back()->with('success', 'Ditugaskan ke Seksi 2.');
+        return back()->with('success', 'Tiket ditugaskan ke Seksi.');
     }
 
     public function markReady(Ticket $ticket)
@@ -82,8 +76,8 @@ class TicketWorkflowController extends Controller
         $this->authorize('markReady', $ticket);
 
         $ticket->update([
-            'status' => 'Data siap',
-            'assignment' => 'Admin TU',
+            'status' => TicketStatus::READY,
+            'assignment' => TicketAssignment::ADMIN_TU,
         ]);
 
         return back()->with('success', 'Data ditandai siap.');
@@ -94,7 +88,7 @@ class TicketWorkflowController extends Controller
         $this->authorize('finalize', $ticket);
 
         $ticket->update([
-            'status' => 'Selesai',
+            'status' => TicketStatus::COMPLETED,
             'assignment' => null,
         ]);
 

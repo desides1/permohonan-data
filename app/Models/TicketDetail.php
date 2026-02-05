@@ -3,10 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\SubmitMethod;
+use App\Enums\DocumentAccessType;
+use App\Enums\DeliveryMethod;
+use App\Models\TicketProgress;
+use App\Models\Attachment;
+use App\Models\Feedback;
 
 class TicketDetail extends Model
 {
     protected $fillable = [
+        'tickets_progress_id',
+        'ticket_code',
         'name',
         'email',
         'telp',
@@ -18,16 +26,30 @@ class TicketDetail extends Model
         'get_doc',
         'send_doc',
         'data_purpose',
-        'details_data'
+        'details_data',
     ];
 
-    public function ticket()
+    protected $table = 'ticket_detail';
+
+    protected $casts = [
+        'submit_data' => SubmitMethod::class,
+        'get_doc' => DocumentAccessType::class,
+        'send_doc' => DeliveryMethod::class,
+    ];
+
+
+    public function ticketProgress()
     {
-        return $this->belongsTo(Ticket::class);
+        return $this->belongsTo(TicketProgress::class, 'tickets_progress_id', 'id');
     }
 
     public function attachments()
     {
         return $this->hasMany(Attachment::class, 'ticket_details_id', 'id');
+    }
+
+    public function feedbacks()
+    {
+        return $this->hasOne(Feedback::class);
     }
 }
