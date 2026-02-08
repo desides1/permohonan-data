@@ -23,7 +23,7 @@ class TicketController extends Controller
                 'verify'        => Gate::allows('verify', $ticket),
                 'approve'       => Gate::allows('approve', $ticket),
                 'reject'        => Gate::allows('reject', $ticket),
-                'assignSeksi' => Gate::allows('assignSeksi', $ticket),
+                'assign'        => Gate::allows('assign', $ticket),
                 'markReady'     => Gate::allows('markReady', $ticket),
                 'finalize'      => Gate::allows('finalize', $ticket),
             ],

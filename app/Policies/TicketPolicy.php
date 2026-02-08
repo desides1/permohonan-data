@@ -2,76 +2,74 @@
 
 namespace App\Policies;
 
-use App\Models\Ticket;
+use App\Models\TicketProgress;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Enums\TicketStatus;
 
 class TicketPolicy
 {
+    use HandlesAuthorization;
     /**
      * Admin TU memverifikasi tiket
      */
-    public function verify(User $user, Ticket $ticket): bool
+    public function verify(User $user, TicketProgress $ticket): bool
     {
-        return $user->hasRole('Admin TU')
-            && $ticket->status === 'Dikirim';
+        return $user->hasRole('admin_tu')
+            && $ticket->status === TicketStatus::SENT;
     }
 
     /**
      * Pimpinan menyetujui tiket
      */
-    public function approve(User $user, Ticket $ticket): bool
+    public function approve(User $user, TicketProgress $ticket): bool
     {
-        return $user->hasRole('Pimpinan')
-            && $ticket->status === 'Diverifikasi oleh admin TU';
+        return $user->hasAnyRole(['pimpinan_bpkh', 'pimpinan_ppkh'])
+            && $ticket->status === TicketStatus::VERIFIED;
     }
 
     /**
      * Penolakan (Admin TU atau Pimpinan)
      */
-    public function reject(User $user, Ticket $ticket): bool
+    public function reject(User $user, TicketProgress $ticket): bool
     {
-        return $user->hasAnyRole(['Admin TU', 'Pimpinan'])
-            && $ticket->status !== 'Selesai'
-            && $ticket->status !== 'Di tolak';
+        return $user->hasAnyRole(['admin_tu', 'pimpinan_bpkh', 'pimpinan_ppkh'])
+            && ! in_array($ticket->status, [
+                TicketStatus::COMPLETED,
+                TicketStatus::REJECTED,
+            ]);
     }
 
     /**
      * Admin TU assign ke Seksi 1
      */
-    public function assignSeksi1(User $user, Ticket $ticket): bool
+    public function assign(User $user, TicketProgress $ticket): bool
     {
-        return $user->hasRole('Admin TU')
-            && $ticket->status === 'Di setujui oleh pimpinan';
-    }
-
-    /**
-     * Admin TU assign ke Seksi 2
-     */
-    public function assignSeksi2(User $user, Ticket $ticket): bool
-    {
-        return $user->hasRole('Admin TU')
-            && $ticket->status === 'Di setujui oleh pimpinan';
+        return $user->hasAnyRole([
+            'admin_tu',
+            'pimpinan_bpkh',
+            'pimpinan_ppkh',
+            'seksi',
+        ])
+            && ! in_array($ticket->status, [
+                TicketStatus::COMPLETED,
+                TicketStatus::REJECTED,
+            ]);
     }
 
     /**
      * Seksi 1 / 2 upload data
      */
-    public function uploadData(User $user, Ticket $ticket): bool
+    public function uploadData(User $user, TicketProgress $ticket): bool
     {
-        return (
-            $user->hasRole('Seksi 1')
-            && $ticket->status === 'Ditugaskan ke penyedia 1'
-        ) || (
-            $user->hasRole('Seksi 2')
-            && $ticket->status === 'Ditugaskan ke penyedia 2'
-        );
+        return $user->hasRole('seksi')
+            && $ticket->status === TicketStatus::ASSIGNED;
     }
 
     /**
      * Seksi menandai data siap
      */
-    public function markReady(User $user, Ticket $ticket): bool
+    public function markReady(User $user, TicketProgress $ticket): bool
     {
         return $this->uploadData($user, $ticket);
     }
@@ -79,9 +77,9 @@ class TicketPolicy
     /**
      * Admin TU menyelesaikan tiket
      */
-    public function finalize(User $user, Ticket $ticket): bool
+    public function finalize(User $user, TicketProgress $ticket): bool
     {
-        return $user->hasRole('Admin TU')
-            && $ticket->status === 'Data siap';
+        return $user->hasRole('admin_tu')
+            && $ticket->status === TicketStatus::READY;
     }
 }

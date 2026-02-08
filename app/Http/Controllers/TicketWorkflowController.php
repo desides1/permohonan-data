@@ -8,6 +8,7 @@ use App\Models\Assignment;
 use App\Models\TicketProgress;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Validation\Rule;
 
 class TicketWorkflowController extends Controller
 {
@@ -65,22 +66,28 @@ class TicketWorkflowController extends Controller
     }
 
     /**
-     * SATU pintu assignment Seksi
+     * SATU pintu assignment antar Petugas
      */
-    public function assignSeksi(TicketProgress $ticket)
+    public function assign(Request $request, TicketProgress $ticket)
     {
-        $this->authorize('assignSeksi', $ticket);
+        $this->authorize('assign', $ticket);
+
+        $data = $request->validate([
+            'assignment' => ['required', Rule::enum(TicketAssignment::class)],
+            'notes' => ['nullable', 'string'],
+        ]);
 
         $ticket->update([
             'status' => TicketStatus::ASSIGNED,
         ]);
 
         $ticket->assignments()->create([
-            'assignment' => TicketAssignment::SEKSI,
-            'notes' => 'Tiket ditugaskan ke Seksi terkait.',
+            'assignment' => $data['assignment'],
+            'notes' => $data['notes'] ?? 'Penugasan dipindahkan.',
         ]);
 
-        return back()->with('success', 'Tiket ditugaskan ke Seksi.');
+
+        return back()->with('success', 'Tiket berhasil ditugaskan ke petugas terkait.');
     }
 
     public function markReady(TicketProgress $ticket)
