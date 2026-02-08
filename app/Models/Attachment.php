@@ -8,7 +8,7 @@ class Attachment extends Model
 {
     protected $table = 'attachment';
 
-    protected $fillable = ['ticket_details_id', 'file_name', 'file_path', 'type'];
+    protected $fillable = ['ticket_details_id', 'file_name', 'file_path'];
 
     public function ticketDetail()
     {

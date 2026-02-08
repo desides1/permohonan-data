@@ -28,19 +28,18 @@ const trackingCode = computed(() => page.props.flash?.ticket_code);
 
 // Form data
 const form = reactive({
-    nama: "",
+    name: "",
     email: "",
-    telepon: "",
-    kodepos: "",
-    alamat: "",
-    pekerjaan: "",
-    instansi: "",
-    tujuan: "",
-    cara_pengajuan: "langsung",
+    telp: "",
+    postal_code: "",
+    address: "",
+    job: "",
+    institute: "",
+    data_purpose: "",
+    submit_data: "",
     details_data: "",
-    cara_pengambilan: "salinan",
-    cara_penyerahan: "",
-
+    get_doc: "",
+    send_doc: "",
     surat_permohonan: null,
     lampiran: [],
 });
@@ -117,7 +116,7 @@ watch(
         if (val) {
             showSuccessModal.value = true;
         }
-    }
+    },
 );
 </script>
 
@@ -126,7 +125,9 @@ watch(
         <!-- Hero Section -->
         <section
             class="relative h-[360px] bg-cover bg-center"
-            style="background-image: url('/images/pulauPulauKecil.jpg')"
+            style="
+                background-image: url(&quot;/images/pulauPulauKecil.jpg&quot;);
+            "
         >
             <div class="absolute inset-0 bg-black/40"></div>
             <div class="relative z-10 max-w-7xl mx-auto px-6 py-24 text-white">
@@ -243,11 +244,11 @@ watch(
                     <Label>Cara Pengajuan</Label>
                     <RadioGroup v-model="form.submit_data" class="space-y-2">
                         <div class="flex items-center space-x-2">
-                            <RadioGroupItem value="Langsung" id="langsung" />
+                            <RadioGroupItem value="direct" id="langsung" />
                             <Label for="langsung">Langsung</Label>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <RadioGroupItem value="Tidak Langsung" id="tidak" />
+                            <RadioGroupItem value="indirect" id="tidak" />
                             <Label for="tidak">Tidak Langsung</Label>
                         </div>
                     </RadioGroup>
@@ -268,17 +269,14 @@ watch(
                         <Label>Cara Pengambilan Data</Label>
                         <RadioGroup v-model="form.get_doc" class="space-y-2">
                             <div class="flex items-center space-x-2">
-                                <RadioGroupItem
-                                    value="Salinan (softcopy/hardcopy)"
-                                    id="salinan"
-                                />
+                                <RadioGroupItem value="copy" id="salinan" />
                                 <Label for="salinan"
                                     >Salinan (SoftCopy/HardCopy)</Label
                                 >
                             </div>
                             <div class="flex items-center space-x-2">
                                 <RadioGroupItem
-                                    value="Melihat/membaca/mendengarkan/mencatat"
+                                    value="view_only"
                                     id="melihat"
                                 />
                                 <Label for="melihat"
@@ -298,12 +296,12 @@ watch(
                                 />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Email">Email</SelectItem>
-                                <SelectItem value="Langsung"
+                                <SelectItem value="email">Email</SelectItem>
+                                <SelectItem value="langsung"
                                     >Langsung</SelectItem
                                 >
-                                <SelectItem value="Pos">Pos</SelectItem>
-                                <SelectItem value="Kurir">Kurir</SelectItem>
+                                <SelectItem value="post">Pos</SelectItem>
+                                <SelectItem value="courier">Kurir</SelectItem>
                             </SelectContent>
                             <InputError :message="page.props.errors.send_doc" />
                         </Select>

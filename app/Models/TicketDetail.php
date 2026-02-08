@@ -13,7 +13,6 @@ use App\Models\Feedback;
 class TicketDetail extends Model
 {
     protected $fillable = [
-        'tickets_progress_id',
         'ticket_code',
         'name',
         'email',
@@ -40,7 +39,7 @@ class TicketDetail extends Model
 
     public function ticketProgress()
     {
-        return $this->belongsTo(TicketProgress::class, 'tickets_progress_id', 'id');
+        return $this->hasOne(TicketProgress::class, 'ticket_details_id', 'id');
     }
 
     public function attachments()

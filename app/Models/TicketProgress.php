@@ -16,18 +16,14 @@ class TicketProgress extends Model
     ];
 
     protected $fillable = [
+        'ticket_details_id',
         'status',
         'is_read',
         'notes',
     ];
 
-    public function assignments()
-    {
-        return $this->hasMany(Assignment::class);
-    }
-
     public function ticketDetails()
     {
-        return $this->hasMany(TicketDetail::class);
+        return $this->belongsTo(TicketDetail::class, 'ticket_details_id', 'id');
     }
 }

@@ -30,7 +30,9 @@ const submitTracking = () => {
     <MainLayout>
         <section
             class="relative h-[360px] bg-cover bg-center"
-            style="background-image: url('/images/pulauPulauKecil.jpg')"
+            style="
+                background-image: url(&quot;/images/pulauPulauKecil.jpg&quot;);
+            "
         >
             <div class="absolute inset-0 bg-black/40"></div>
 
@@ -88,13 +90,13 @@ const submitTracking = () => {
                     <thead>
                         <tr class="bg-gray-100">
                             <th class="border border-gray-300 px-4 py-2">
+                                Tanggal
+                            </th>
+                            <th class="border border-gray-300 px-4 py-2">
                                 Kode Tiket
                             </th>
                             <th class="border border-gray-300 px-4 py-2">
                                 Status
-                            </th>
-                            <th class="border border-gray-300 px-4 py-2">
-                                Penugasan
                             </th>
                             <th class="border border-gray-300 px-4 py-2">
                                 Catatan
@@ -104,13 +106,13 @@ const submitTracking = () => {
                     <tbody>
                         <tr>
                             <td class="border border-gray-300 px-4 py-2">
+                                {{ ticket.updated_at }}
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2">
                                 {{ ticket.ticket_code }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 {{ ticket.status }}
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                {{ ticket.assignment }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 {{ ticket.notes }}.
