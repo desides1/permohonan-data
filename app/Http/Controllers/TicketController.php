@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ticket;
+use App\Models\TicketProgress;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class TicketController extends Controller
 {
 
-    public function show(Ticket $ticket)
+    public function show(TicketProgress $ticket)
     {
         return Inertia::render('Tickets/Show', [
             'ticket' => $ticket->load([

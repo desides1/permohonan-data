@@ -53,7 +53,7 @@ class RequestController extends Controller
         $progress = $detail->ticketProgress;
 
         $ticket = [
-            'updated_at' => $progress?->updated_at ?? null,
+            'updated_at' => $progress?->updated_at->format('d M Y') ?? null,
             'ticket_code' => $detail->ticket_code,
             'status'      => $progress?->status ?? null,
             'notes'       => $progress?->notes ?? null,
