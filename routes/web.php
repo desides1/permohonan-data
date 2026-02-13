@@ -16,7 +16,7 @@ Route::post('/track-ticket', [RequestController::class, 'trackTicket'])->name('t
 Route::get('/bantuan', fn() => Inertia::render('LandingPage/FAQ'));
 
 // Ticket Workflow Routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
     Route::get('/beranda', [TicketController::class, 'showBeranda'])->name('admin.beranda');
     Route::post('/tickets/{ticket}/verify', [TicketWorkflowController::class, 'verify']);
     Route::post('/tickets/{ticket}/approve', [TicketWorkflowController::class, 'approve']);
@@ -42,12 +42,12 @@ Route::middleware(['auth'])->group(function () {
 //     ]);
 // });
 
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
-});
+// Route::middleware([
+//     'auth:sanctum',
+//     config('jetstream.auth_session'),
+//     'verified',
+// ])->group(function () {
+//     Route::get('/beranda', function () {
+//         return Inertia::render('Admin/Beranda/Beranda');
+//     })->name('beranda');
+// });

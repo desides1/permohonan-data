@@ -169,9 +169,10 @@ const chartOptions = computed<ApexOptions>(() => ({
                                     <td class="px-5 py-4">
                                         {{ ticket.name }}
                                     </td>
-                                    <td class="px-5 py-4">
+                                    <td class="px-5 py-4 text-white">
                                         <Badge
                                             :style="{
+                                                padding: '0.25rem 0.75rem',
                                                 backgroundColor:
                                                     STATUS_COLORS[
                                                         ticket.status
