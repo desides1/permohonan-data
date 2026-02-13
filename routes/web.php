@@ -16,8 +16,8 @@ Route::post('/track-ticket', [RequestController::class, 'trackTicket'])->name('t
 Route::get('/bantuan', fn() => Inertia::render('LandingPage/FAQ'));
 
 // Ticket Workflow Routes
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
-    Route::get('/beranda', [TicketController::class, 'showBeranda'])->name('admin.beranda');
+Route::prefix('admin')->middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->name('admin.')->group(function () {
+    Route::get('/beranda', [TicketController::class, 'showBeranda'])->name('beranda');
     Route::post('/tickets/{ticket}/verify', [TicketWorkflowController::class, 'verify']);
     Route::post('/tickets/{ticket}/approve', [TicketWorkflowController::class, 'approve']);
     Route::post('/tickets/{ticket}/reject', [TicketWorkflowController::class, 'reject']);

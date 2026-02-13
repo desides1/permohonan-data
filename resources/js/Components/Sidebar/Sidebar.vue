@@ -1,5 +1,8 @@
 <script setup>
 import { inject } from "vue";
+// import { Link } from "@inertiajs/vue3";
+import { Link } from "@inertiajs/vue3";
+
 import {
     House,
     FileText,
@@ -9,7 +12,6 @@ import {
     LogOut,
 } from "lucide-vue-next";
 import { sidebarMenu } from "./SidebarMenu.js";
-
 const closeSidebar = inject("closeSidebar", null);
 const icons = {
     House,
@@ -55,22 +57,22 @@ const icons = {
                     </summary>
 
                     <div class="submenu-line">
-                        <a
+                        <Link
                             v-for="child in item.children"
                             :key="child.label"
-                            :href="child.href"
+                            :href="item.route ? route(child.route) : '#'"
                             class="submenu-item"
                             @click="closeSidebar && closeSidebar()"
                         >
                             {{ child.label }}
-                        </a>
+                        </Link>
                     </div>
                 </details>
 
                 <!-- MENU TANPA SUBMENU -->
-                <a
+                <Link
                     v-else
-                    :href="item.href"
+                    :href="item.route ? route(item.route) : '#'"
                     class="menu-item"
                     @click="closeSidebar && closeSidebar()"
                 >
@@ -78,7 +80,7 @@ const icons = {
                     <span class="text-sm font-medium">
                         {{ item.label }}
                     </span>
-                </a>
+                </Link>
             </template>
         </nav>
 
