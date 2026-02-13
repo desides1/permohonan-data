@@ -6,10 +6,8 @@
     display: none;
 }
 
-
-
 @layer base {
-  :root {
+    :root {
         --background: 0 0% 100%;
         --foreground: 0 0% 3.9%;
         --card: 0 0% 100%;
@@ -35,8 +33,26 @@
         --chart-4: 43 74% 66%;
         --chart-5: 27 87% 67%;
         --radius: 0.5rem;
+
+        /* === SIDEBAR BASE === */
+        --sidebar-background: 155 85% 7%; /* #032313 */
+        --sidebar-foreground: 150 30% 92%; /* text utama */
+
+        /* === PRIMARY (ACTIVE ITEM) === */
+        --sidebar-primary: 155 55% 38%; /* hijau hidup */
+        --sidebar-primary-foreground: 150 40% 96%;
+
+        /* === ACCENT (HOVER / SUBTLE) === */
+        --sidebar-accent: 155 55% 38%;
+        --sidebar-accent-foreground: 150 40% 96%;
+
+        /* === BORDER / DIVIDER === */
+        --sidebar-border: 155 35% 18%;
+
+        /* === RING (FOCUS STATE) === */
+        --sidebar-ring: 155 55% 45%;
     }
-  .dark {
+    .dark {
         --background: 0 0% 3.9%;
         --foreground: 0 0% 98%;
         --card: 0 0% 3.9%;
@@ -61,16 +77,22 @@
         --chart-3: 30 80% 55%;
         --chart-4: 280 65% 60%;
         --chart-5: 340 75% 55%;
+        --sidebar-background: 240 5.9% 10%;
+        --sidebar-foreground: 240 4.8% 95.9%;
+        --sidebar-primary: 224.3 76.3% 48%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 240 3.7% 15.9%;
+        --sidebar-accent-foreground: 240 4.8% 95.9%;
+        --sidebar-border: 240 3.7% 15.9%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
     }
 }
 
-
-
 @layer base {
-  * {
-    @apply border-border;
+    * {
+        @apply border-border;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
     }
 }
