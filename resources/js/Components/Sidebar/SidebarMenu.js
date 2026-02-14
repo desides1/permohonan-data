@@ -7,7 +7,7 @@ export const sidebarMenu = [
     {
         label: "Data Permohonan",
         icon: "FileText",
-        href: "#",
+        route: "admin.tickets.index",
     },
     {
         label: "Catatan Aktivitas",

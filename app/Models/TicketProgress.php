@@ -26,4 +26,9 @@ class TicketProgress extends Model
     {
         return $this->belongsTo(TicketDetail::class, 'ticket_details_id', 'id');
     }
+
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class);
+    }
 }

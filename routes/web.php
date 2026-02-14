@@ -18,17 +18,27 @@ Route::get('/bantuan', fn() => Inertia::render('LandingPage/FAQ'));
 // Ticket Workflow Routes
 Route::prefix('admin')->middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->name('admin.')->group(function () {
     Route::get('/beranda', [TicketController::class, 'showBeranda'])->name('beranda');
-    Route::post('/tickets/{ticket}/verify', [TicketWorkflowController::class, 'verify']);
-    Route::post('/tickets/{ticket}/approve', [TicketWorkflowController::class, 'approve']);
-    Route::post('/tickets/{ticket}/reject', [TicketWorkflowController::class, 'reject']);
+    Route::get('/data-permohonan', [TicketController::class, 'dataPermohonan'])
+        ->name('tickets.index');
+    Route::get('/tickets/{ticket}', [TicketController::class, 'show'])
+        ->name('tickets.show');
 
-    Route::post('/tickets/{ticket}/assign/seksi-1', [TicketWorkflowController::class, 'assignSeksi1']);
-    Route::post('/tickets/{ticket}/assign/seksi-2', [TicketWorkflowController::class, 'assignSeksi2']);
+    Route::post('/tickets/{ticket}/verify', [TicketWorkflowController::class, 'verify'])
+        ->name('tickets.verify');
 
-    Route::post('/tickets/{ticket}/mark-ready', [TicketWorkflowController::class, 'markReady']);
-    Route::post('/tickets/{ticket}/finalize', [TicketWorkflowController::class, 'finalize']);
+    Route::post('/tickets/{ticket}/approve', [TicketWorkflowController::class, 'approve'])
+        ->name('tickets.approve');
 
-    Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
+    Route::post('/tickets/{ticket}/assign', [TicketWorkflowController::class, 'assign'])
+        ->name('tickets.assign');
+
+    Route::post('/tickets/{ticket}/ready', [TicketWorkflowController::class, 'markReady'])
+        ->name('tickets.markReady');
+
+    Route::post('/tickets/{ticket}/finalize', [TicketWorkflowController::class, 'finalize'])
+        ->name('tickets.finalize');
+
+    // Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
 });
 
 

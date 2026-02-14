@@ -21,6 +21,6 @@ class Assignment extends Model
 
     public function ticketProgress()
     {
-        return $this->belongsTo(TicketProgress::class, 'ticket_progress_id');
+        return $this->belongsTo(TicketProgress::class, 'ticket_progress_id', 'id');
     }
 }

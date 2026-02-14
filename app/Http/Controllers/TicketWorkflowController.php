@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\TicketStatus;
 use App\Enums\TicketAssignment;
-use App\Models\Assignment;
 use App\Models\TicketProgress;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -30,7 +29,7 @@ class TicketWorkflowController extends Controller
         return back()->with('success', 'Tiket diverifikasi.');
     }
 
-    public function approve(TicketProgress $ticket, Assignment $assignment)
+    public function approve(TicketProgress $ticket)
     {
         $this->authorize('approve', $ticket);
 
