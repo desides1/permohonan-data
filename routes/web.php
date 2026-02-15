@@ -15,9 +15,10 @@ Route::get('/lacak', fn() => Inertia::render('LandingPage/TrackRequest'));
 Route::post('/track-ticket', [RequestController::class, 'trackTicket'])->name('ticket.track');
 Route::get('/bantuan', fn() => Inertia::render('LandingPage/FAQ'));
 
-// Ticket Workflow Routes
-Route::prefix('admin')->middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->name('admin.')->group(function () {
-    Route::get('/beranda', [TicketController::class, 'showBeranda'])->name('beranda');
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',])->name('admin.')->group(function () {
+    Route::get('/admin/beranda', function () {
+        return Inertia::render('Admin/Beranda/Beranda');
+    })->name('beranda');
     Route::get('/data-permohonan', [TicketController::class, 'dataPermohonan'])
         ->name('tickets.index');
     Route::get('/tickets/{ticket}', [TicketController::class, 'show'])
@@ -37,6 +38,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', config('jetstream.auth_sessi
 
     Route::post('/tickets/{ticket}/finalize', [TicketWorkflowController::class, 'finalize'])
         ->name('tickets.finalize');
+});
+
+// Ticket Workflow Routes
+Route::prefix('admin')->middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->name('admin.')->group(function () {
+    Route::get('/beranda', [TicketController::class, 'showBeranda'])->name('beranda');
+
 
     // Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
 });
@@ -50,14 +57,4 @@ Route::prefix('admin')->middleware(['auth:sanctum', config('jetstream.auth_sessi
 //         'laravelVersion' => Application::VERSION,
 //         'phpVersion' => PHP_VERSION,
 //     ]);
-// });
-
-// Route::middleware([
-//     'auth:sanctum',
-//     config('jetstream.auth_session'),
-//     'verified',
-// ])->group(function () {
-//     Route::get('/beranda', function () {
-//         return Inertia::render('Admin/Beranda/Beranda');
-//     })->name('beranda');
 // });
