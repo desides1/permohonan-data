@@ -3,14 +3,23 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\TicketDetail;
+use App\Models\User;
 
 class TicketReply extends Model
 {
-    protected $fillable = ['replied_by', 'ticket_id', 'content'];
+
+    protected $table = 'ticket_reply';
+
+    protected $fillable = [
+        'replied_by',
+        'ticket_detail_id',
+        'content',
+    ];
 
     public function ticket()
     {
-        return $this->belongsTo(Ticket::class);
+        return $this->belongsTo(TicketDetail::class);
     }
 
     public function user()

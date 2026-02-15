@@ -11,6 +11,8 @@ class TicketProgress extends Model
 {
     protected $table = 'ticket_progress';
 
+    protected $primaryKey = 'id';
+
     protected $casts = [
         'status' => TicketStatus::class,
     ];

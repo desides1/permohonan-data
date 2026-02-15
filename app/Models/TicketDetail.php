@@ -36,6 +36,10 @@ class TicketDetail extends Model
         'send_doc' => DeliveryMethod::class,
     ];
 
+    public function getRouteKeyName(): string
+    {
+        return 'ticket_code';
+    }
 
     public function ticketProgress()
     {
@@ -50,5 +54,10 @@ class TicketDetail extends Model
     public function feedbacks()
     {
         return $this->hasOne(Feedback::class);
+    }
+
+    public function ticketReplies()
+    {
+        return $this->hasMany(TicketReply::class, 'ticket_detail_id', 'id');
     }
 }

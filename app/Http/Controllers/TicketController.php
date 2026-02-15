@@ -3,24 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\TicketDetail;
-use App\Models\TicketProgress;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
-
     // Detail tiket untuk admin
-    public function show(TicketProgress $ticket)
+    public function show(TicketDetail $ticket)
     {
+
+        $ticket->load([
+            'ticketProgress',
+            'attachments',
+            'ticketReplies'
+        ]);
+
         return Inertia::render('Admin/DataPermohonan/Detail/Show', [
-            'ticket' => $ticket->load([
-                'ticketDetails',
-                'attachments',
-                'notes',
-                'replies.user',
-            ]),
+            'ticket' => $ticket,
             'can' => [
                 'verify'        => Gate::allows('verify', $ticket),
                 'approve'       => Gate::allows('approve', $ticket),
@@ -70,18 +70,23 @@ class TicketController extends Controller
                     $q->where('status', $request->status);
                 });
             })
+            ->when(
+                $request->sort === 'oldest',
+                fn($q) => $q->oldest(),
+                fn($q) => $q->latest()
+            )
             ->latest()
             ->paginate(10)
             ->through(fn($ticket) => [
                 'ticket_code' => $ticket->ticket_code,
                 'name'        => $ticket->name,
-                'status'      => $ticket->ticketProgress?->status?->label(),
+                'is_read'      => $ticket->ticketProgress?->is_read ?? false,
                 'date'        => $ticket->created_at->format('d M Y'),
             ]);
 
         return Inertia::render('Admin/DataPermohonan/Index', [
             'tickets' => $tickets,
-            'filters' => $request->only('status'),
+            'filters' => $request->only('status', 'search', 'sort'),
         ]);
     }
 }
