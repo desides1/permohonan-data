@@ -4,8 +4,9 @@ import Table from "./Table.vue";
 import Filters from "./Filters.vue";
 
 defineProps({
-    tickets: Array,
+    tickets: Object,
     filters: Object,
+    sort: String,
 });
 </script>
 

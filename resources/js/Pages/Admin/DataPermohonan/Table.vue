@@ -74,6 +74,12 @@ const props = defineProps({
                             <div class="flex items-center justify-center gap-3">
                                 <!-- Detail -->
                                 <Link
+                                    :href="
+                                        route(
+                                            'admin.tickets.show',
+                                            ticket.ticket_code,
+                                        )
+                                    "
                                     class="text-green-600 hover:text-green-800"
                                     title="Lihat Detail"
                                 >
