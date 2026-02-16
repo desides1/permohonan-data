@@ -13,16 +13,23 @@ class TicketProgress extends Model
 
     protected $primaryKey = 'id';
 
-    protected $casts = [
-        'status' => TicketStatus::class,
-    ];
-
     protected $fillable = [
         'ticket_details_id',
         'status',
         'is_read',
         'notes',
     ];
+
+    protected $casts = [
+        'status' => TicketStatus::class,
+    ];
+
+    protected $appends = ['status_label'];
+
+    public function getStatusLabelAttribute(): ?string
+    {
+        return $this->status?->label();
+    }
 
     public function ticketDetails()
     {

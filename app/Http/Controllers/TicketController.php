@@ -19,6 +19,15 @@ class TicketController extends Controller
             'ticketReplies'
         ]);
 
+        $ticket->ticketProgress?->update(['is_read' => true]);
+        // $ticket->ticketProgress?->setAttribute(
+        //     'status',
+        //     [
+        //         'value' => $ticket->ticketProgress?->status?->value,
+        //         'label' => $ticket->ticketProgress?->status?->label(),
+        //     ]
+        // );
+
         return Inertia::render('Admin/DataPermohonan/Detail/Show', [
             'ticket' => $ticket,
             'can' => [
