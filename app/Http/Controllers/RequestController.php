@@ -6,10 +6,6 @@ use App\Http\Requests\SubmitRequest;
 use App\Models\TicketDetail;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Str;
-use App\Models\Ticket;
-use App\Models\Attachment;
-use App\Models\TicketProgress;
 use App\Services\RequestSubmissionService;
 use Illuminate\Validation\ValidationException;
 

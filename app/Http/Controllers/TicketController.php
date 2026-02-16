@@ -20,16 +20,18 @@ class TicketController extends Controller
         ]);
 
         $ticket->ticketProgress?->update(['is_read' => true]);
-        // $ticket->ticketProgress?->setAttribute(
-        //     'status',
-        //     [
-        //         'value' => $ticket->ticketProgress?->status?->value,
-        //         'label' => $ticket->ticketProgress?->status?->label(),
-        //     ]
-        // );
+
+        $suratPermohonan = $ticket->attachments
+            ->first(fn($in) => str_contains($in->file_path, 'surat_permohonan'));
+
+        $lampiranLainnya = $ticket->attachments
+            ->filter(fn($in) => !str_contains($in->file_path, 'lampiran_lainnya'))
+            ->values();
 
         return Inertia::render('Admin/DataPermohonan/Detail/Show', [
             'ticket' => $ticket,
+            'suratPermohonan' => $suratPermohonan,
+            'lampiranLainnya' => $lampiranLainnya,
             'can' => [
                 'verify'        => Gate::allows('verify', $ticket),
                 'approve'       => Gate::allows('approve', $ticket),

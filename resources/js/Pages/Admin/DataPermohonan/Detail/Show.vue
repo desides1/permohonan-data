@@ -1,12 +1,22 @@
 <script setup>
 import LayoutDashboard from "@/Layouts/LayoutDashboard.vue";
 
-defineProps({
-    ticket: {
-        type: Object,
-        required: true,
-    },
+// defineProps({
+//     ticket: {
+//         type: Object,
+//         required: true,
+//     },
+// });
+
+const props = defineProps({
+    ticket: Object,
+    suratPermohonan: Object,
+    lampiranLainnya: Array,
 });
+
+const fileUrl = (path) => {
+    return `/storage/${path}`;
+};
 </script>
 <template>
     <LayoutDashboard>
@@ -99,7 +109,7 @@ defineProps({
 
             <!-- Lampiran -->
             <section class="rounded-xl border bg-white p-6">
-                <h2 class="mb-4 font-semibold text-gray-800">Lampiran</h2>
+                <!-- <h2 class="mb-4 font-semibold text-gray-800">Lampiran</h2>
 
                 <div class="space-y-3">
                     <div
@@ -127,6 +137,47 @@ defineProps({
                             :href="file.url"
                             target="_blank"
                             class="text-green-700 hover:underline text-sm"
+                        >
+                            Unduh
+                        </a>
+                    </div>
+                </div> -->
+
+                <div v-if="suratPermohonan" class="rounded-lg border p-4">
+                    <h3 class="mb-2 font-semibold">Surat Permohonan</h3>
+
+                    <!-- Jika PDF -->
+                    <iframe
+                        v-if="suratPermohonan.file_path.endsWith('.pdf')"
+                        :src="fileUrl(suratPermohonan.file_path)"
+                        class="w-full h-[600px] rounded"
+                    ></iframe>
+
+                    <!-- Fallback -->
+                    <a
+                        v-else
+                        :href="fileUrl(suratPermohonan.file_path)"
+                        target="_blank"
+                        class="text-blue-600 underline"
+                    >
+                        Lihat Dokumen
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div
+                        v-for="file in lampiranLainnya"
+                        :key="file.id"
+                        class="rounded-lg border p-3"
+                    >
+                        <p class="text-sm font-medium truncate">
+                            {{ file.file_name }}
+                        </p>
+
+                        <a
+                            :href="fileUrl(file.file_path)"
+                            target="_blank"
+                            class="text-xs text-blue-600 underline mt-1 inline-block"
                         >
                             Unduh
                         </a>
