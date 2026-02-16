@@ -25,7 +25,7 @@ const icons = {
 
 <template>
     <aside
-        class="h-full flex flex-col w-56 bg-sidebar text-sidebar-foreground border-r border-sidebar-border px-4 py-5"
+        class="fixed h-full flex flex-col w-56 bg-sidebar text-sidebar-foreground border-r border-sidebar-border px-4 py-5"
     >
         <div class="text-base font-semibold mb-5 tracking-wide">BPKH Admin</div>
 

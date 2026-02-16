@@ -19,7 +19,7 @@ defineEmits(["open-sidebar"]);
 
 <template>
     <header
-        class="h-16 flex items-center justify-between px-6 bg-white shadow-sm"
+        class="sticky top-0 z-10 h-16 flex items-center justify-between px-6 bg-white shadow-sm"
     >
         <button class="md:hidden p-2 rounded-md" @click="$emit('open-sidebar')">
             <svg
