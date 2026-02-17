@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\TicketDetail;
+use App\Models\Attachment;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
@@ -41,6 +43,37 @@ class TicketController extends Controller
                 'finalize'      => Gate::allows('finalize', $ticket),
             ],
         ]);
+    }
+
+    public function download(int $attachmentId)
+    {
+        $attachment = Attachment::with('ticketDetail')->findOrFail($attachmentId);
+
+        // (opsional tapi sangat disarankan)
+        // $this->authorize('view', $attachment->ticketDetail);
+
+        $disk = Storage::disk('public');
+
+        if (! $disk->exists($attachment->file_path)) {
+            abort(404, 'File tidak ditemukan.');
+        }
+
+        $ticket = $attachment->ticketDetail;
+
+        $ticketCode = $ticket->ticket_code;
+        $pemohon = str($ticket->name)
+            ->lower()
+            ->replace(' ', '-');
+
+        $type = str_contains($attachment->file_path, 'surat_permohonan')
+            ? 'surat-permohonan'
+            : 'lampiran';
+
+        $extension = pathinfo($attachment->file_path, PATHINFO_EXTENSION);
+
+        $downloadName = "{$ticketCode}_{$pemohon}_{$type}.{$extension}";
+
+        return response()->download($disk->path($attachment->file_path), $downloadName);
     }
 
     // Beranda admin dengan ringkasan tiket

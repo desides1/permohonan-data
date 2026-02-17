@@ -38,6 +38,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
 
     Route::post('/tickets/{ticket}/finalize', [TicketWorkflowController::class, 'finalize'])
         ->name('tickets.finalize');
+
+    Route::get('/attachments/{attachment}/download', [TicketController::class, 'download'])
+        ->name('attachments.download');
 });
 
 // Ticket Workflow Routes

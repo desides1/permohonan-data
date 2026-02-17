@@ -12,6 +12,6 @@ class Attachment extends Model
 
     public function ticketDetail()
     {
-        return $this->belongsTo(TicketDetail::class);
+        return $this->belongsTo(TicketDetail::class, 'ticket_details_id', 'id');
     }
 }

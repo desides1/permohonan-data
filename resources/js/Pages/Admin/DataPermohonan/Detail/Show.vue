@@ -17,6 +17,8 @@ const props = defineProps({
 const fileUrl = (path) => {
     return `/storage/${path}`;
 };
+
+const downloadUrl = (id) => route("admin.attachments.download", id);
 </script>
 <template>
     <LayoutDashboard>
@@ -175,9 +177,8 @@ const fileUrl = (path) => {
                         </p>
 
                         <a
-                            :href="fileUrl(file.file_path)"
-                            target="_blank"
-                            class="text-xs text-blue-600 underline mt-1 inline-block"
+                            :href="route('admin.attachments.download', file.id)"
+                            class="text-blue-600 hover:underline"
                         >
                             Unduh
                         </a>
