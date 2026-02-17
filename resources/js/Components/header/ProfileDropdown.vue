@@ -36,71 +36,127 @@
                 v-if="open"
                 class="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg ring-1 ring-slate-100 z-50"
             >
-                <a href="/profile" class="dropdown-item"> Profil </a>
-
-                <a href="/settings" class="dropdown-item"> Pengaturan </a>
+                <a href="/profile" class="dropdown-item">Profil</a>
+                <a href="/settings" class="dropdown-item">Pengaturan</a>
 
                 <div class="border-t border-slate-100"></div>
 
-                <a href="/logout" class="dropdown-item text-rose-600">
+                <a
+                    href="#"
+                    @click.prevent="showLogoutConfirm"
+                    class="dropdown-item text-rose-600"
+                >
                     Keluar
                 </a>
+
+                <!-- Logout Confirmation Dialog -->
+                <div
+                    v-if="logoutConfirm"
+                    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                >
+                    <div class="bg-white rounded-lg p-6 max-w-sm">
+                        <h3 class="text-lg font-semibold text-slate-900 mb-2">
+                            Konfirmasi Keluar
+                        </h3>
+                        <p class="text-slate-600 mb-6">
+                            Apakah Anda yakin ingin keluar?
+                        </p>
+                        <div class="flex gap-3 justify-end">
+                            <button
+                                @click="logoutConfirm = false"
+                                class="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                @click="logout"
+                                class="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-md"
+                            >
+                                Keluar
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </transition>
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { router } from "@inertiajs/vue3";
 
-export default {
-    name: "ProfileDropdown",
-    props: {
-        adminName: {
-            type: String,
-            default: "Admin",
-        },
+/* =====================
+   Props
+===================== */
+const props = defineProps({
+    adminName: {
+        type: String,
+        default: "Admin",
     },
-    setup(props) {
-        const open = ref(false);
-        const dropdownRef = ref(null);
+});
 
-        const initials = computed(() =>
-            props.adminName
-                .split(" ")
-                .map((w) => w[0])
-                .slice(0, 2)
-                .join("")
-                .toUpperCase(),
-        );
+/* =====================
+   State
+===================== */
+const open = ref(false);
+const logoutConfirm = ref(false);
+const dropdownRef = ref(null);
 
-        const toggle = () => {
-            open.value = !open.value;
-        };
+/* =====================
+   Computed
+===================== */
+const initials = computed(() =>
+    props.adminName
+        .split(" ")
+        .map((word) => word[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase(),
+);
 
-        const handleClickOutside = (e) => {
-            if (!dropdownRef.value) return;
-            if (!dropdownRef.value.contains(e.target)) {
-                open.value = false;
-            }
-        };
-
-        onMounted(() => {
-            document.addEventListener("click", handleClickOutside);
-        });
-
-        onBeforeUnmount(() => {
-            document.removeEventListener("click", handleClickOutside);
-        });
-
-        return {
-            open,
-            toggle,
-            dropdownRef,
-            initials,
-        };
-    },
+/* =====================
+   Methods
+===================== */
+const toggle = () => {
+    open.value = !open.value;
 };
+
+const showLogoutConfirm = () => {
+    logoutConfirm.value = true;
+};
+
+const logout = () => {
+    router.post(
+        route("logout"),
+        {},
+        {
+            preserveScroll: false,
+            onFinish: () => {
+                logoutConfirm.value = false;
+                open.value = false;
+            },
+        },
+    );
+};
+
+const handleClickOutside = (event) => {
+    if (!dropdownRef.value) return;
+    if (!dropdownRef.value.contains(event.target)) {
+        open.value = false;
+    }
+};
+
+/* =====================
+   Lifecycle
+===================== */
+onMounted(() => {
+    document.addEventListener("click", handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener("click", handleClickOutside);
+});
 </script>
 
 <style scoped>

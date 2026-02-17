@@ -37,6 +37,6 @@ export const sidebarMenu = [
     {
         label: "Keluar",
         icon: "LogOut",
-        href: "#",
+        route: "logout",
     },
 ];

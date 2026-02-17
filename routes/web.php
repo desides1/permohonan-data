@@ -29,6 +29,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
 
     Route::post('/tickets/{ticket}/approve', [TicketWorkflowController::class, 'approve'])
         ->name('tickets.approve');
+    Route::post('/tickets/{ticket}/reject', [TicketWorkflowController::class, 'reject'])
+        ->name('tickets.reject');
 
     Route::post('/tickets/{ticket}/assign', [TicketWorkflowController::class, 'assign'])
         ->name('tickets.assign');
@@ -42,6 +44,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     Route::get('/attachments/{attachment}/download', [TicketController::class, 'download'])
         ->name('attachments.download');
 });
+
+
 
 // Ticket Workflow Routes
 Route::prefix('admin')->middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->name('admin.')->group(function () {

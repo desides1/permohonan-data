@@ -1,5 +1,8 @@
 <script setup>
 import LayoutDashboard from "@/Layouts/LayoutDashboard.vue";
+import ConfirmDialog from "./confirmDialog.vue";
+import { ref } from "vue";
+import { router } from "@inertiajs/vue3";
 
 // defineProps({
 //     ticket: {
@@ -10,6 +13,7 @@ import LayoutDashboard from "@/Layouts/LayoutDashboard.vue";
 
 const props = defineProps({
     ticket: Object,
+    can: Object,
     suratPermohonan: Object,
     lampiranLainnya: Array,
 });
@@ -19,6 +23,54 @@ const fileUrl = (path) => {
 };
 
 const downloadUrl = (id) => route("admin.attachments.download", id);
+
+const can = {
+    verify: props.ticket.can_verify,
+    approve: props.ticket.can_approve,
+    reject: props.ticket.can_reject,
+};
+
+const confirmDialogOpen = ref(false);
+const actionType = ref(""); // 'approve' | 'reject'
+const rejectReason = ref("");
+
+function openVerify() {
+    actionType.value = "verify";
+    rejectReason.value = "";
+    confirmDialogOpen.value = true;
+}
+
+function openApprove() {
+    actionType.value = "approve";
+    rejectReason.value = "";
+    confirmOpen.value = true;
+}
+
+function openReject() {
+    actionType.value = "reject";
+    rejectReason.value = "";
+    confirmOpen.value = true;
+}
+
+function closeConfirm() {
+    confirmOpen.value = false;
+}
+
+function submitAction() {
+    const id = props.ticket.ticket_progress.id;
+
+    if (actionType.value === "approve") {
+        router.post(route("admin.tickets.workflow.approve", id));
+    }
+
+    if (actionType.value === "reject") {
+        router.post(route("admin.tickets.workflow.reject", id), {
+            reason: rejectReason.value,
+        });
+    }
+
+    confirmOpen.value = false;
+}
 </script>
 <template>
     <LayoutDashboard>
@@ -111,40 +163,6 @@ const downloadUrl = (id) => route("admin.attachments.download", id);
 
             <!-- Lampiran -->
             <section class="rounded-xl border bg-white p-6">
-                <!-- <h2 class="mb-4 font-semibold text-gray-800">Lampiran</h2>
-
-                <div class="space-y-3">
-                    <div
-                        v-for="file in ticket.attachments"
-                        :key="file.id"
-                        class="flex items-center justify-between rounded-lg border p-4 text-sm"
-                    >
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="h-10 w-10 flex items-center justify-center rounded-lg bg-gray-100"
-                            >
-                                📄
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-800">
-                                    {{ file.filename }}
-                                </p>
-                                <p class="text-xs text-gray-500">
-                                    {{ file.size }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <a
-                            :href="file.url"
-                            target="_blank"
-                            class="text-green-700 hover:underline text-sm"
-                        >
-                            Unduh
-                        </a>
-                    </div>
-                </div> -->
-
                 <div v-if="suratPermohonan" class="rounded-lg border p-4">
                     <h3 class="mb-2 font-semibold">Surat Permohonan</h3>
 
@@ -201,17 +219,40 @@ const downloadUrl = (id) => route("admin.attachments.download", id);
 
             <!-- Action -->
             <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <pre class="text-xs bg-gray-100 p-2 mt-4"
+                    >{{ can }}
+  </pre
+                >
                 <button
+                    v-if="can.verify"
+                    @click="openVerify"
+                    class="rounded-lg bg-green-500 px-6 py-2 text-white hover:bg-green-600 text-sm"
+                >
+                    Verifikasi
+                </button>
+                <button
+                    v-if="can.approve"
+                    @click="openApprove"
+                    class="rounded-lg bg-yellow-500 px-6 py-2 text-white hover:bg-yellow-600 text-sm"
+                >
+                    Setujui
+                </button>
+                <button
+                    v-if="can.reject"
+                    @click="openReject"
                     class="rounded-lg border border-red-500 px-6 py-2 text-red-600 hover:bg-red-50 text-sm"
                 >
                     Tolak
                 </button>
-                <button
-                    class="rounded-lg bg-yellow-500 px-6 py-2 text-white hover:bg-yellow-600 text-sm"
-                >
-                    Terima
-                </button>
             </div>
         </div>
+        <ConfirmDialog
+            :open="confirmDialogOpen"
+            :actionType="actionType"
+            :rejectReason="rejectReason"
+            @close="closeConfirm"
+            @confirm="submitAction"
+            @update:rejectReason="(val) => (rejectReason = val)"
+        />
     </LayoutDashboard>
 </template>
