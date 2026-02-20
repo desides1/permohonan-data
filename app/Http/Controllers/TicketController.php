@@ -6,6 +6,8 @@ use App\Models\TicketDetail;
 use App\Models\Attachment;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use App\Enums\TicketStatus;
+use App\Models\User;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
@@ -30,17 +32,25 @@ class TicketController extends Controller
             ->filter(fn($in) => !str_contains($in->file_path, 'lampiran_lainnya'))
             ->values();
 
+        // dd([
+        //     'status' => $ticket->ticketProgress->status,
+        //     'enum' => TicketStatus::SENT,
+        //     'status_match' => $ticket->ticketProgress->status === TicketStatus::SENT,
+        //     'user_roles' => auth()->user()->getRoleNames(),
+        //     'has_admin_tu' => auth()->user()->hasRole('admin_tu'),
+        // ]);
+
         return Inertia::render('Admin/DataPermohonan/Detail/Show', [
             'ticket' => $ticket,
             'suratPermohonan' => $suratPermohonan,
             'lampiranLainnya' => $lampiranLainnya,
             'can' => [
-                'verify'        => Gate::allows('verify', $ticket),
-                'approve'       => Gate::allows('approve', $ticket),
-                'reject'        => Gate::allows('reject', $ticket),
-                'assign'        => Gate::allows('assign', $ticket),
-                'markReady'     => Gate::allows('markReady', $ticket),
-                'finalize'      => Gate::allows('finalize', $ticket),
+                'verify'        => Gate::allows('verify', $ticket->ticketProgress),
+                'approve'       => Gate::allows('approve', $ticket->ticketProgress),
+                'reject'        => Gate::allows('reject', $ticket->ticketProgress),
+                'assign'        => Gate::allows('assign', $ticket->ticketProgress),
+                'markReady'     => Gate::allows('markReady', $ticket->ticketProgress),
+                'finalize'      => Gate::allows('finalize', $ticket->ticketProgress),
             ],
         ]);
     }

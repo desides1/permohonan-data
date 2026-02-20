@@ -1,6 +1,6 @@
 <script setup>
 import LayoutDashboard from "@/Layouts/LayoutDashboard.vue";
-import ConfirmDialog from "./confirmDialog.vue";
+import ConfirmDialog from "./ConfirmDialog.vue";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
@@ -219,26 +219,26 @@ function submitAction() {
 
             <!-- Action -->
             <div class="flex flex-col sm:flex-row justify-end gap-3">
-                <pre class="text-xs bg-gray-100 p-2 mt-4"
-                    >{{ can }}
+                <!-- <pre class="text-xs bg-gray-100 p-2 mt-4"
+                    >{{ props.can }}
   </pre
-                >
+                > -->
                 <button
-                    v-if="can.verify"
+                    v-if="props.can.verify"
                     @click="openVerify"
                     class="rounded-lg bg-green-500 px-6 py-2 text-white hover:bg-green-600 text-sm"
                 >
                     Verifikasi
                 </button>
                 <button
-                    v-if="can.approve"
+                    v-if="props.can.approve"
                     @click="openApprove"
                     class="rounded-lg bg-yellow-500 px-6 py-2 text-white hover:bg-yellow-600 text-sm"
                 >
                     Setujui
                 </button>
                 <button
-                    v-if="can.reject"
+                    v-if="props.can.reject"
                     @click="openReject"
                     class="rounded-lg border border-red-500 px-6 py-2 text-red-600 hover:bg-red-50 text-sm"
                 >
