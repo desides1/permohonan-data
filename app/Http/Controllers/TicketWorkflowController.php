@@ -2,117 +2,155 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\TicketStatus;
-use App\Enums\TicketAssignment;
 use App\Models\TicketProgress;
-use Illuminate\Http\Request;
+use App\Services\TicketWorkflowService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\Request;
 
 class TicketWorkflowController extends Controller
 {
     use AuthorizesRequests;
 
+    public function __construct(
+        private readonly TicketWorkflowService $workflow,
+    ) {}
+
+    /**
+     * Admin TU → Verifikasi (SENT → VERIFIED)
+     */
     public function verify(TicketProgress $ticket)
     {
         $this->authorize('verify', $ticket);
 
-        $ticket->update([
-            'status' => TicketStatus::VERIFIED,
-        ]);
+        $this->workflow->verify($ticket, auth()->user());
 
-        $ticket->assignments()->create([
-            'assignment' => TicketAssignment::PIMPINAN_BPKH,
-            'notes' => 'Tiket diverifikasi dan diteruskan ke Pimpinan BPKH.',
-        ]);
-
-        return back()->with('success', 'Tiket diverifikasi.');
+        return back()->with('success', 'Tiket berhasil diverifikasi dan diteruskan ke Pimpinan BPKH.');
     }
 
+    /**
+     * Pimpinan BPKH → Setujui (VERIFIED → APPROVED)
+     */
     public function approve(TicketProgress $ticket)
     {
         $this->authorize('approve', $ticket);
 
-        $ticket->update([
-            'status' => TicketStatus::APPROVED,
-        ]);
+        $this->workflow->approve($ticket, auth()->user());
 
-        $ticket->assignments()->create([
-            'assignment' => TicketAssignment::PIMPINAN_PPKH,
-            'notes' => 'Tiket disetujui oleh Pimpinan BPKH.',
-        ]);
-
-        return back()->with('success', 'Tiket disetujui pimpinan.');
-    }
-
-    public function reject(Request $request, TicketProgress $ticket)
-    {
-        $this->authorize('reject', $ticket);
-
-        $request->validate([
-            'reason' => 'required|string|min:10',
-        ]);
-
-        $ticket->update([
-            'status' => TicketStatus::REJECTED,
-        ]);
-
-        $ticket->notes()->create([
-            'notes' => 'DITOLAK: ' . $request->reason,
-        ]);
-
-        return back()->with('error', 'Permohonan ditolak.');
+        return back()->with('success', 'Tiket disetujui dan diteruskan ke Pimpinan PPKH.');
     }
 
     /**
-     * SATU pintu assignment antar Petugas
+     * Pimpinan PPKH → Disposisi ke Seksi (APPROVED → ASSIGNED)
      */
     public function assign(Request $request, TicketProgress $ticket)
     {
         $this->authorize('assign', $ticket);
 
         $data = $request->validate([
-            'assignment' => ['required', Rule::enum(TicketAssignment::class)],
-            'notes' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $ticket->update([
-            'status' => TicketStatus::ASSIGNED,
-        ]);
+        $this->workflow->assignToSeksi($ticket, auth()->user(), $data['notes'] ?? null);
 
-        $ticket->assignments()->create([
-            'assignment' => $data['assignment'],
-            'notes' => $data['notes'] ?? 'Penugasan dipindahkan.',
-        ]);
-
-
-        return back()->with('success', 'Tiket berhasil ditugaskan ke petugas terkait.');
+        return back()->with('success', 'Tiket berhasil ditugaskan ke Seksi.');
     }
 
+    /**
+     * Seksi → Data Siap (ASSIGNED/REVISION → READY)
+     */
     public function markReady(TicketProgress $ticket)
     {
         $this->authorize('markReady', $ticket);
 
-        $ticket->update([
-            'status' => TicketStatus::READY,
-        ]);
-
-        $ticket->assignments()->create([
-            'assignment' => TicketAssignment::ADMIN_TU,
-            'notes' => 'Data permohonan telah siap dan dikembalikan ke Admin TU.',
-        ]);
+        $this->workflow->markReady($ticket, auth()->user());
 
         return back()->with('success', 'Data ditandai siap.');
     }
 
+    /**
+     * Pimpinan PPKH → Review data (READY → UNDER_REVIEW_PPKH)
+     */
+    public function reviewPpkh(TicketProgress $ticket)
+    {
+        $this->authorize('reviewPpkh', $ticket);
+
+        $this->workflow->reviewByPpkh($ticket, auth()->user());
+
+        return back()->with('success', 'Data sedang ditinjau.');
+    }
+
+    /**
+     * Pimpinan PPKH → Teruskan ke BPKH (UNDER_REVIEW_PPKH → UNDER_REVIEW_BPKH)
+     */
+    public function forwardToBpkh(TicketProgress $ticket)
+    {
+        $this->authorize('forwardToBpkh', $ticket);
+
+        $this->workflow->forwardToBpkh($ticket, auth()->user());
+
+        return back()->with('success', 'Data diteruskan ke Pimpinan BPKH.');
+    }
+
+    /**
+     * Pimpinan PPKH/BPKH → Minta Revisi (UNDER_REVIEW_PPKH/BPKH → REVISION)
+     */
+    public function requestRevision(Request $request, TicketProgress $ticket)
+    {
+        // Bisa dari PPKH atau BPKH
+        $user = auth()->user();
+
+        if ($user->hasRole('pimpinan_ppkh')) {
+            $this->authorize('requestRevision', $ticket);
+        } else {
+            $this->authorize('requestRevisionBpkh', $ticket);
+        }
+
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'min:10', 'max:1000'],
+        ]);
+
+        $this->workflow->requestRevision($ticket, $user, $data['reason']);
+
+        return back()->with('success', 'Permintaan revisi dikirim ke Seksi.');
+    }
+
+    /**
+     * Pimpinan BPKH → Final Approve (UNDER_REVIEW_BPKH → FINAL_APPROVED)
+     */
+    public function finalApprove(TicketProgress $ticket)
+    {
+        $this->authorize('finalApprove', $ticket);
+
+        $this->workflow->finalApprove($ticket, auth()->user());
+
+        return back()->with('success', 'Tiket disetujui final.');
+    }
+
+    /**
+     * Admin TU → Selesaikan (FINAL_APPROVED → COMPLETED)
+     */
     public function finalize(TicketProgress $ticket)
     {
         $this->authorize('finalize', $ticket);
 
-        $ticket->update([
-            'status' => TicketStatus::COMPLETED,
-        ]);
+        $this->workflow->finalize($ticket, auth()->user());
 
         return back()->with('success', 'Permohonan selesai.');
+    }
+
+    /**
+     * Tolak permohonan
+     */
+    public function reject(Request $request, TicketProgress $ticket)
+    {
+        $this->authorize('reject', $ticket);
+
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'min:10', 'max:1000'],
+        ]);
+
+        $this->workflow->reject($ticket, auth()->user(), $data['reason']);
+
+        return back()->with('error', 'Permohonan ditolak.');
     }
 }

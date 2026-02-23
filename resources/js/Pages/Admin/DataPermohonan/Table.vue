@@ -6,7 +6,15 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    userRole: {
+        type: String,
+        default: "",
+    },
 });
+
+const canShowDisposisi = ["pimpinan_bpkh", "pimpinan_ppkh"].includes(
+    props.userRole,
+);
 </script>
 
 <template>
@@ -17,9 +25,13 @@ const props = defineProps({
                     <tr>
                         <th class="px-4 py-3 text-left">Tiket</th>
                         <th class="px-4 py-3 text-left">Pemohon</th>
-                        <th class="px-4 py-3 text-left">Status Dibaca</th>
+                        <th class="px-4 py-3 text-left">Status</th>
+                        <th class="px-4 py-3 text-left">Status Baca</th>
+                        <th class="px-4 py-3 text-left">Penugasan Saat Ini</th>
                         <th class="px-4 py-3 text-left">Tanggal</th>
-                        <th class="px-4 py-3 text-left">Penugasan</th>
+                        <th v-if="canShowDisposisi" class="px-4 py-3 text-left">
+                            Penugasan
+                        </th>
                         <th class="px-4 py-3 text-center">Tindakan</th>
                     </tr>
                 </thead>
@@ -29,9 +41,14 @@ const props = defineProps({
                         v-for="ticket in props.tickets.data"
                         :key="ticket.ticket_code"
                         class="hover:bg-gray-50"
+                        :class="{ 'bg-blue-50': !ticket.is_read }"
                     >
                         <!-- Tiket -->
                         <td class="px-4 py-3 font-medium text-gray-900">
+                            <span
+                                v-if="!ticket.is_read"
+                                class="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"
+                            ></span>
                             #{{ ticket.ticket_code }}
                         </td>
 
@@ -40,18 +57,43 @@ const props = defineProps({
                             {{ ticket.name }}
                         </td>
 
-                        <!-- Status Dibaca -->
+                        <!-- Status -->
                         <td class="px-4 py-3">
                             <span
                                 class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-                                :class="
-                                    ticket.status === 'Belum Dibaca'
-                                        ? 'bg-red-100 text-red-700'
-                                        : 'bg-green-100 text-green-700'
-                                "
+                                :class="{
+                                    'bg-gray-100 text-gray-700':
+                                        ticket.status_value === 'sent',
+                                    'bg-blue-100 text-blue-700':
+                                        ticket.status_value === 'verified',
+                                    'bg-green-100 text-green-700': [
+                                        'approved',
+                                        'final_approved',
+                                        'completed',
+                                    ].includes(ticket.status_value),
+                                    'bg-yellow-100 text-yellow-700': [
+                                        'assigned',
+                                        'ready',
+                                        'under_review_ppkh',
+                                        'under_review_bpkh',
+                                    ].includes(ticket.status_value),
+                                    'bg-orange-100 text-orange-700':
+                                        ticket.status_value === 'revision',
+                                    'bg-red-100 text-red-700':
+                                        ticket.status_value === 'rejected',
+                                }"
                             >
-                                {{ ticket.status ?? "Belum Dibaca" }}
+                                {{ ticket.status }}
                             </span>
+                        </td>
+
+                        <td class="px-4 py-3 text-gray-600">
+                            {{ ticket.is_read ?? "-" }}
+                        </td>
+
+                        <!-- Penugasan Saat Ini -->
+                        <td class="px-4 py-3 text-gray-600">
+                            {{ ticket.current_assignment ?? "-" }}
                         </td>
 
                         <!-- Tanggal -->
@@ -59,10 +101,15 @@ const props = defineProps({
                             {{ ticket.date }}
                         </td>
 
-                        <!-- Penugasan -->
-                        <td class="px-4 py-3">
+                        <!-- Penugasan (hanya Pimpinan BPKH & PPKH) -->
+                        <td v-if="canShowDisposisi" class="px-4 py-3">
                             <Link
-                                href="#"
+                                :href="
+                                    route(
+                                        'admin.tickets.show',
+                                        ticket.ticket_code,
+                                    )
+                                "
                                 class="inline-flex items-center rounded-md bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-700"
                             >
                                 Disposisi
@@ -72,7 +119,6 @@ const props = defineProps({
                         <!-- Tindakan -->
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-center gap-3">
-                                <!-- Detail -->
                                 <Link
                                     :href="
                                         route(
@@ -85,21 +131,16 @@ const props = defineProps({
                                 >
                                     👁️
                                 </Link>
-
-                                <!-- Delete -->
-                                <button
-                                    class="text-red-600 hover:text-red-800"
-                                    title="Hapus"
-                                >
-                                    🗑️
-                                </button>
                             </div>
                         </td>
                     </tr>
 
                     <!-- Empty State -->
                     <tr v-if="props.tickets.data.length === 0">
-                        <td colspan="6" class="py-10 text-center text-gray-500">
+                        <td
+                            :colspan="canShowDisposisi ? 7 : 6"
+                            class="py-10 text-center text-gray-500"
+                        >
                             Tidak ada data permohonan
                         </td>
                     </tr>
@@ -107,14 +148,31 @@ const props = defineProps({
             </table>
         </div>
 
-        <!-- Pagination (simple placeholder) -->
+        <!-- Pagination -->
         <div
+            v-if="props.tickets.total > 0"
             class="flex items-center justify-between px-4 py-3 text-sm text-gray-600"
         >
             <span>
                 Menampilkan {{ props.tickets.from }}–{{ props.tickets.to }} dari
                 {{ props.tickets.total }} hasil
             </span>
+
+            <div class="flex gap-1">
+                <Link
+                    v-for="link in props.tickets.links"
+                    :key="link.label"
+                    :href="link.url ?? '#'"
+                    class="px-3 py-1 rounded border text-xs"
+                    :class="{
+                        'bg-green-600 text-white border-green-600': link.active,
+                        'hover:bg-gray-50': !link.active && link.url,
+                        'text-gray-300 cursor-not-allowed': !link.url,
+                    }"
+                    v-html="link.label"
+                    :preserve-scroll="true"
+                />
+            </div>
         </div>
     </div>
 </template>

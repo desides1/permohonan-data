@@ -17,9 +17,14 @@ class RolePermissionSeeder extends Seeder
             'ticket.create',
             'ticket.track',
             'ticket.verify',
-            'ticket.assign',
             'ticket.approve',
+            'ticket.assign',
             'ticket.reject',
+            'ticket.mark_ready',
+            'ticket.review_ppkh',
+            'ticket.forward_to_bpkh',
+            'ticket.request_revision',
+            'ticket.final_approve',
             'ticket.finalize',
         ];
 
@@ -27,6 +32,7 @@ class RolePermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
+        // ─── Roles ──────────────────────────────────
         $pemohon = Role::firstOrCreate(['name' => 'pemohon']);
         $adminTu = Role::firstOrCreate(['name' => 'admin_tu']);
         $bpkh    = Role::firstOrCreate(['name' => 'pimpinan_bpkh']);
@@ -34,36 +40,38 @@ class RolePermissionSeeder extends Seeder
         $seksi   = Role::firstOrCreate(['name' => 'seksi']);
 
         // Pemohon
-        $pemohon->givePermissionTo([
+        $pemohon->syncPermissions([
             'ticket.create',
             'ticket.track',
         ]);
 
         // Admin TU
-        $adminTu->givePermissionTo([
+        $adminTu->syncPermissions([
             'ticket.verify',
-            'ticket.assign',
             'ticket.reject',
+            'ticket.finalize',
         ]);
 
         // Pimpinan BPKH
-        $bpkh->givePermissionTo([
-            'ticket.assign',
+        $bpkh->syncPermissions([
             'ticket.approve',
             'ticket.reject',
+            'ticket.final_approve',
+            'ticket.request_revision',
         ]);
 
         // Pimpinan PPKH
-        $ppkh->givePermissionTo([
+        $ppkh->syncPermissions([
             'ticket.assign',
-            'ticket.approve',
             'ticket.reject',
+            'ticket.review_ppkh',
+            'ticket.forward_to_bpkh',
+            'ticket.request_revision',
         ]);
 
         // Seksi
-        $seksi->givePermissionTo([
-            'ticket.assign',
-            'ticket.finalize',
+        $seksi->syncPermissions([
+            'ticket.mark_ready',
         ]);
     }
 }
