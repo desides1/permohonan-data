@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\TicketStatus;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,6 +42,8 @@ class HandleInertiaRequests extends Middleware
                 'ticket_code' => fn() => $request->session()->get('ticket_code'),
                 'success' => fn() => $request->session()->get('success'),
                 'error' => fn() => $request->session()->get('error'),
+                'statusMeta' => fn() => collect(TicketStatus::cases())
+                    ->mapWithKeys(fn($status) => [$status->label() => $status->metaByLabel()])->all(),
             ],
         ];
     }

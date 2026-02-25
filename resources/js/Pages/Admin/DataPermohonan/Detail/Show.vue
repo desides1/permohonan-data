@@ -167,33 +167,29 @@ const currentConfig = () => actionConfig[actionType.value] || {};
                             )
                         }}
                     </span>
+
+                    <!-- Status badge — warna dari backend -->
                     <span
                         class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-                        :class="{
-                            'bg-yellow-100 text-yellow-700':
-                                !ticket.ticket_progress.status
-                                    ?.toString()
-                                    .includes('completed') &&
-                                !ticket.ticket_progress.status
-                                    ?.toString()
-                                    .includes('rejected'),
-                            'bg-green-100 text-green-700':
-                                ticket.ticket_progress.status
-                                    ?.toString()
-                                    .includes('completed') ||
-                                ticket.ticket_progress.status
-                                    ?.toString()
-                                    .includes('final'),
-                            'bg-red-100 text-red-700':
-                                ticket.ticket_progress.status
-                                    ?.toString()
-                                    .includes('rejected'),
+                        :style="{
+                            backgroundColor:
+                                (ticket.ticket_progress?.status_color ??
+                                    '#94a3b8') + '18',
+                            color:
+                                ticket.ticket_progress?.status_color ??
+                                '#64748b',
+                            border:
+                                '1px solid ' +
+                                (ticket.ticket_progress?.status_color ??
+                                    '#94a3b8') +
+                                '30',
                         }"
                     >
-                        {{ ticket.ticket_progress.status_label }}
+                        {{ ticket.ticket_progress?.status_label }}
                     </span>
+
                     <span
-                        v-if="ticket.ticket_progress.current_assignment_label"
+                        v-if="ticket.ticket_progress?.current_assignment_label"
                         class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700"
                     >
                         📌

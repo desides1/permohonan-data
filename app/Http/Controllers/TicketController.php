@@ -22,6 +22,13 @@ class TicketController extends Controller
 
         $is_read = $ticket->ticketProgress?->update(['is_read' => true]);
 
+        if ($ticket->ticketProgress) {
+            $ticket->ticketProgress->setAttribute(
+                'status_color',
+                $ticket->ticketProgress->status?->color(),
+            );
+        }
+
         $suratPermohonan = $ticket->attachments
             ->first(fn($a) => str_contains($a->file_path, 'surat_permohonan'));
 
@@ -117,9 +124,15 @@ class TicketController extends Controller
         // Hitung distribusi berdasarkan status yang terlihat
         $distribution = [];
         foreach ($visibleStatuses as $status) {
-            $distribution[$status->label()] = TicketDetail::query()
-                ->whereHas('ticketProgress', fn($q) => $q->where('status', $status->value))
-                ->count();
+            $distribution[] = [
+                'label' => $status->label(),
+                'value' => $status->value,
+                'color' => $status->color(),
+                'icon'  => $status->icon(),
+                'count' => TicketDetail::query()
+                    ->whereHas('ticketProgress', fn($q) => $q->where('status', $status->value))
+                    ->count(),
+            ];
         }
 
         return Inertia::render('Admin/Beranda/Beranda', [
@@ -163,6 +176,7 @@ class TicketController extends Controller
                 'is_read'            => $ticket->ticketProgress?->is_read ?? false,
                 'status'             => $ticket->ticketProgress?->status?->label(),
                 'status_value'       => $ticket->ticketProgress?->status?->value,
+                'status_color'       => $ticket->ticketProgress?->status?->color(),
                 'current_assignment' => $ticket->ticketProgress?->current_assignment?->label(),
                 'date'               => $ticket->created_at->format('d M Y'),
             ]);

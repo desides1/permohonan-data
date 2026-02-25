@@ -1,4 +1,5 @@
 <script setup>
+// filepath: d:\TA\project-manajemen-permohonan-bpkh\permohonan-data-bpkh\resources\js\Pages\Admin\DataPermohonan\Table.vue
 import { Link } from "@inertiajs/vue3";
 
 const props = defineProps({
@@ -26,7 +27,6 @@ const canShowDisposisi = ["pimpinan_bpkh", "pimpinan_ppkh"].includes(
                         <th class="px-4 py-3 text-left">Tiket</th>
                         <th class="px-4 py-3 text-left">Pemohon</th>
                         <th class="px-4 py-3 text-left">Status</th>
-                        <th class="px-4 py-3 text-left">Status Baca</th>
                         <th class="px-4 py-3 text-left">Penugasan Saat Ini</th>
                         <th class="px-4 py-3 text-left">Tanggal</th>
                         <th v-if="canShowDisposisi" class="px-4 py-3 text-left">
@@ -57,38 +57,23 @@ const canShowDisposisi = ["pimpinan_bpkh", "pimpinan_ppkh"].includes(
                             {{ ticket.name }}
                         </td>
 
-                        <!-- Status -->
+                        <!-- Status — warna dari backend, tanpa class conditional -->
                         <td class="px-4 py-3">
                             <span
                                 class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-                                :class="{
-                                    'bg-gray-100 text-gray-700':
-                                        ticket.status_value === 'sent',
-                                    'bg-blue-100 text-blue-700':
-                                        ticket.status_value === 'verified',
-                                    'bg-green-100 text-green-700': [
-                                        'approved',
-                                        'final_approved',
-                                        'completed',
-                                    ].includes(ticket.status_value),
-                                    'bg-yellow-100 text-yellow-700': [
-                                        'assigned',
-                                        'ready',
-                                        'under_review_ppkh',
-                                        'under_review_bpkh',
-                                    ].includes(ticket.status_value),
-                                    'bg-orange-100 text-orange-700':
-                                        ticket.status_value === 'revision',
-                                    'bg-red-100 text-red-700':
-                                        ticket.status_value === 'rejected',
+                                :style="{
+                                    backgroundColor:
+                                        (ticket.status_color ?? '#94a3b8') +
+                                        '18',
+                                    color: ticket.status_color ?? '#64748b',
+                                    border:
+                                        '1px solid ' +
+                                        (ticket.status_color ?? '#94a3b8') +
+                                        '30',
                                 }"
                             >
                                 {{ ticket.status }}
                             </span>
-                        </td>
-
-                        <td class="px-4 py-3 text-gray-600">
-                            {{ ticket.is_read ?? "-" }}
                         </td>
 
                         <!-- Penugasan Saat Ini -->

@@ -5,8 +5,21 @@ import LayoutDashboard from "@/Layouts/LayoutDashboard.vue";
 import ContentBeranda from "@/Pages/Admin/Beranda/ContentBeranda.vue";
 
 defineProps<{
-    distribution: Record<string, number>;
-    tickets: any[];
+    distribution: {
+        label: string;
+        value: string;
+        color: string;
+        icon: string;
+        count: number;
+    }[];
+    tickets: {
+        ticket_code: string;
+        name: string;
+        status: string;
+        status_color: string;
+        status_icon: string;
+        current_assignment: string;
+    }[];
 }>();
 </script>
 

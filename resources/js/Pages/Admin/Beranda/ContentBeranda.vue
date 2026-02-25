@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from "vue";
+// filepath: d:\TA\project-manajemen-permohonan-bpkh\permohonan-data-bpkh\resources\js\Pages\Admin\Beranda\ContentBeranda.vue
+import { computed, type Component } from "vue";
 import VueApexCharts from "vue3-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/card";
@@ -19,80 +20,73 @@ import {
 } from "lucide-vue-next";
 
 /* ========================
-   Props dari Inertia
+   Types
 ======================== */
+interface StatusDistribution {
+    label: string;
+    value: string;
+    color: string;
+    icon: string;
+    count: number;
+}
+
+interface Ticket {
+    ticket_code: string;
+    name: string;
+    status: string;
+    status_color: string;
+    status_icon: string;
+    current_assignment?: string;
+}
+
 interface Props {
-    distribution: Record<string, number>;
-    tickets?: {
-        ticket_code: string;
-        name: string;
-        status: string;
-        current_assignment?: string;
-    }[];
+    distribution: StatusDistribution[];
+    tickets?: Ticket[];
 }
 
 const props = defineProps<Props>();
 
 /* ========================
-   Status Label → Color Mapping
-   Key = label() dari TicketStatus enum di backend
+   Icon name → Component mapping
+   (Satu-satunya mapping yang dibutuhkan di frontend)
 ======================== */
-const STATUS_COLORS: Record<string, string> = {
-    Dikirim: "#facc15", // yellow-500
-    "Diverifikasi Admin TU": "#3b82f6", // blue-500
-    "Disetujui Pimpinan BPKH": "#8b5cf6", // violet-500
-    "Ditugaskan ke Seksi": "#f59e0b", // amber-500
-    "Data Siap": "#06b6d4", // cyan-500
-    "Dalam Peninjauan PPKH": "#f97316", // orange-500
-    "Dalam Peninjauan BPKH": "#a855f7", // purple-500
-    Revisi: "#ef4444", // red-500
-    "Disetujui Final": "#10b981", // emerald-500
-    Selesai: "#22c55e", // green-500
-    Ditolak: "#dc2626", // red-600
+const ICON_MAP: Record<string, Component> = {
+    Send,
+    ShieldCheck,
+    ThumbsUp,
+    UserCheck,
+    PackageCheck,
+    Search,
+    ScanSearch,
+    RotateCcw,
+    BadgeCheck,
+    CircleCheckBig,
+    CircleX,
 };
 
-const STATUS_ICONS: Record<string, any> = {
-    Dikirim: Send,
-    "Diverifikasi Admin TU": ShieldCheck,
-    "Disetujui Pimpinan BPKH": ThumbsUp,
-    "Ditugaskan ke Seksi": UserCheck,
-    "Data Siap": PackageCheck,
-    "Dalam Peninjauan PPKH": Search,
-    "Dalam Peninjauan BPKH": ScanSearch,
-    Revisi: RotateCcw,
-    "Disetujui Final": BadgeCheck,
-    Selesai: CircleCheckBig,
-    Ditolak: CircleX,
-};
+function resolveIcon(iconName: string): Component {
+    return ICON_MAP[iconName] ?? Send;
+}
 
 /* ========================
    Chart Computed
 ======================== */
-const chartSeries = computed(() => Object.values(props.distribution ?? {}));
+const chartSeries = computed(() => props.distribution.map((d) => d.count));
 
-const chartLabels = computed(() => Object.keys(props.distribution ?? {}));
+const chartLabels = computed(() => props.distribution.map((d) => d.label));
 
-const chartColors = computed(() =>
-    chartLabels.value.map((label) => STATUS_COLORS[label] ?? "#94a3b8"),
-);
+const chartColors = computed(() => props.distribution.map((d) => d.color));
 
 const totalTickets = computed(() =>
     chartSeries.value.reduce((a, b) => a + b, 0),
 );
 
 const chartOptions = computed<ApexOptions>(() => ({
-    chart: {
-        type: "donut",
-    },
+    chart: { type: "donut" },
     labels: chartLabels.value,
     colors: chartColors.value,
-    legend: {
-        position: "bottom",
-        fontSize: "13px",
-    },
-    dataLabels: {
-        enabled: true,
-    },
+    legend: { position: "bottom", fontSize: "13px" },
+    dataLabels: { enabled: true },
     plotOptions: {
         pie: {
             donut: {
@@ -124,11 +118,11 @@ const chartOptions = computed<ApexOptions>(() => ({
 
         <hr class="border-muted" />
 
-        <!-- Status Cards -->
+        <!-- Status Cards — warna & icon langsung dari backend -->
         <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <Card
-                v-for="(count, status) in props.distribution"
-                :key="status"
+                v-for="item in distribution"
+                :key="item.value"
                 class="rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200"
             >
                 <CardContent class="flex items-center justify-between p-5">
@@ -136,12 +130,12 @@ const chartOptions = computed<ApexOptions>(() => ({
                     <div class="space-y-1 min-w-0 flex-1 mr-3">
                         <p
                             class="text-xs font-medium text-muted-foreground leading-tight truncate"
-                            :title="String(status)"
+                            :title="item.label"
                         >
-                            {{ status }}
+                            {{ item.label }}
                         </p>
                         <p class="text-2xl font-bold tracking-tight">
-                            {{ count }}
+                            {{ item.count }}
                         </p>
                     </div>
 
@@ -149,19 +143,15 @@ const chartOptions = computed<ApexOptions>(() => ({
                     <div
                         class="w-11 h-11 rounded-lg flex items-center justify-center shrink-0"
                         :style="{
-                            backgroundColor: STATUS_COLORS[String(status)]
-                                ? STATUS_COLORS[String(status)] + '18'
-                                : '#f1f5f9',
-                            color: STATUS_COLORS[String(status)] ?? '#64748b',
+                            backgroundColor: item.color + '18',
+                            color: item.color,
                         }"
                     >
                         <component
-                            :is="STATUS_ICONS[String(status)]"
-                            v-if="STATUS_ICONS[String(status)]"
+                            :is="resolveIcon(item.icon)"
                             class="w-5 h-5"
                             :stroke-width="2"
                         />
-                        <Send v-else class="w-5 h-5" />
                     </div>
                 </CardContent>
             </Card>
@@ -169,7 +159,7 @@ const chartOptions = computed<ApexOptions>(() => ({
 
         <!-- Konten bawah -->
         <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <!-- Tabel Permohonan -->
+            <!-- Tabel Permohonan Terbaru -->
             <Card class="xl:col-span-2 rounded-xl shadow-sm">
                 <CardHeader>
                     <CardTitle class="text-base">
@@ -199,7 +189,7 @@ const chartOptions = computed<ApexOptions>(() => ({
 
                             <tbody>
                                 <tr
-                                    v-for="ticket in props.tickets || []"
+                                    v-for="ticket in props.tickets ?? []"
                                     :key="ticket.ticket_code"
                                     class="border-b hover:bg-muted/40 transition"
                                 >
@@ -215,18 +205,11 @@ const chartOptions = computed<ApexOptions>(() => ({
                                             :style="{
                                                 padding: '0.25rem 0.75rem',
                                                 backgroundColor:
-                                                    (STATUS_COLORS[
-                                                        ticket.status
-                                                    ] ?? '#94a3b8') + '18',
-                                                color:
-                                                    STATUS_COLORS[
-                                                        ticket.status
-                                                    ] ?? '#64748b',
+                                                    ticket.status_color + '18',
+                                                color: ticket.status_color,
                                                 border:
                                                     '1px solid ' +
-                                                    (STATUS_COLORS[
-                                                        ticket.status
-                                                    ] ?? '#94a3b8') +
+                                                    ticket.status_color +
                                                     '30',
                                             }"
                                         >
