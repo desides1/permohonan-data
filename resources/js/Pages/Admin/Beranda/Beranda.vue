@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import AppLayout from "@/Layouts/AppLayout.vue";
-import Welcome from "@/Components/Welcome.vue";
 import LayoutDashboard from "@/Layouts/LayoutDashboard.vue";
 import ContentBeranda from "@/Pages/Admin/Beranda/ContentBeranda.vue";
 
@@ -12,13 +10,20 @@ defineProps<{
         icon: string;
         count: number;
     }[];
-    tickets: {
+    recentActivities: {
+        id: number;
         ticket_code: string;
-        name: string;
-        status: string;
-        status_color: string;
-        status_icon: string;
-        current_assignment: string;
+        action: string | null;
+        description: string;
+        from_status: string | null;
+        from_status_label: string | null;
+        from_status_color: string | null;
+        to_status: string | null;
+        to_status_label: string | null;
+        to_status_color: string | null;
+        causer: string | null;
+        created_at: string;
+        time_ago: string;
     }[];
 }>();
 </script>
@@ -33,6 +38,9 @@ defineProps<{
             </h2>
         </template>
 
-        <ContentBeranda :distribution="distribution" :tickets="tickets" />
+        <ContentBeranda
+            :distribution="distribution"
+            :recent-activities="recentActivities"
+        />
     </LayoutDashboard>
 </template>

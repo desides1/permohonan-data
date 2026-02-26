@@ -17,6 +17,9 @@ import {
     BadgeCheck,
     CircleCheckBig,
     CircleX,
+    ArrowRight,
+    Clock,
+    User,
 } from "lucide-vue-next";
 
 /* ========================
@@ -30,18 +33,25 @@ interface StatusDistribution {
     count: number;
 }
 
-interface Ticket {
+interface RecentActivity {
+    id: number;
     ticket_code: string;
-    name: string;
-    status: string;
-    status_color: string;
-    status_icon: string;
-    current_assignment?: string;
+    action: string | null;
+    description: string;
+    from_status: string | null;
+    from_status_label: string | null;
+    from_status_color: string | null;
+    to_status: string | null;
+    to_status_label: string | null;
+    to_status_color: string | null;
+    causer: string | null;
+    created_at: string;
+    time_ago: string;
 }
 
 interface Props {
     distribution: StatusDistribution[];
-    tickets?: Ticket[];
+    recentActivities?: RecentActivity[];
 }
 
 const props = defineProps<Props>();
@@ -159,78 +169,233 @@ const chartOptions = computed<ApexOptions>(() => ({
 
         <!-- Konten bawah -->
         <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <!-- Tabel Permohonan Terbaru -->
+            <!-- Riwayat Aktivitas Terakhir -->
             <Card class="xl:col-span-2 rounded-xl shadow-sm">
                 <CardHeader>
                     <CardTitle class="text-base">
-                        Permohonan Terbaru
+                        Riwayat Aktivitas Terakhir
                     </CardTitle>
                 </CardHeader>
 
                 <CardContent class="p-0">
-                    <div class="overflow-x-auto">
+                    <!-- Desktop: Table -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead class="bg-muted/50">
                                 <tr>
-                                    <th class="px-5 py-3 text-left font-medium">
+                                    <th
+                                        class="px-4 py-3 text-left font-medium text-muted-foreground"
+                                    >
                                         Kode Tiket
                                     </th>
-                                    <th class="px-5 py-3 text-left font-medium">
-                                        Pemohon
+                                    <th
+                                        class="px-4 py-3 text-left font-medium text-muted-foreground"
+                                    >
+                                        Perubahan Status
                                     </th>
-                                    <th class="px-5 py-3 text-left font-medium">
-                                        Status
+                                    <th
+                                        class="px-4 py-3 text-left font-medium text-muted-foreground"
+                                    >
+                                        Oleh
                                     </th>
-                                    <th class="px-5 py-3 text-left font-medium">
-                                        Penugasan
+                                    <th
+                                        class="px-4 py-3 text-left font-medium text-muted-foreground"
+                                    >
+                                        Waktu
                                     </th>
                                 </tr>
                             </thead>
 
                             <tbody>
                                 <tr
-                                    v-for="ticket in props.tickets ?? []"
-                                    :key="ticket.ticket_code"
-                                    class="border-b hover:bg-muted/40 transition"
+                                    v-for="act in props.recentActivities ?? []"
+                                    :key="act.id"
+                                    class="border-b last:border-b-0 hover:bg-muted/40 transition-colors"
                                 >
-                                    <td class="px-5 py-4 font-medium">
-                                        #{{ ticket.ticket_code }}
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        {{ ticket.name }}
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <Badge
-                                            class="text-xs font-medium"
-                                            :style="{
-                                                padding: '0.25rem 0.75rem',
-                                                backgroundColor:
-                                                    ticket.status_color + '18',
-                                                color: ticket.status_color,
-                                                border:
-                                                    '1px solid ' +
-                                                    ticket.status_color +
-                                                    '30',
-                                            }"
+                                    <!-- Kode Tiket -->
+                                    <td class="px-4 py-3">
+                                        <span
+                                            class="font-semibold text-foreground"
                                         >
-                                            {{ ticket.status }}
-                                        </Badge>
+                                            #{{ act.ticket_code }}
+                                        </span>
                                     </td>
-                                    <td class="px-5 py-4 text-muted-foreground">
-                                        {{ ticket.current_assignment ?? "-" }}
+
+                                    <!-- Perubahan Status -->
+                                    <td class="px-4 py-3">
+                                        <div
+                                            class="flex items-center gap-2 flex-wrap"
+                                        >
+                                            <!-- From -->
+                                            <Badge
+                                                v-if="act.from_status_label"
+                                                class="text-[11px] font-medium whitespace-nowrap"
+                                                :style="{
+                                                    padding: '0.15rem 0.5rem',
+                                                    backgroundColor:
+                                                        (act.from_status_color ??
+                                                            '#94a3b8') + '18',
+                                                    color:
+                                                        act.from_status_color ??
+                                                        '#64748b',
+                                                    border:
+                                                        '1px solid ' +
+                                                        (act.from_status_color ??
+                                                            '#94a3b8') +
+                                                        '30',
+                                                }"
+                                            >
+                                                {{ act.from_status_label }}
+                                            </Badge>
+
+                                            <!-- Arrow -->
+                                            <ArrowRight
+                                                v-if="
+                                                    act.from_status_label &&
+                                                    act.to_status_label
+                                                "
+                                                class="w-3.5 h-3.5 text-muted-foreground shrink-0"
+                                            />
+
+                                            <!-- To -->
+                                            <Badge
+                                                v-if="act.to_status_label"
+                                                class="text-[11px] font-medium whitespace-nowrap"
+                                                :style="{
+                                                    padding: '0.15rem 0.5rem',
+                                                    backgroundColor:
+                                                        (act.to_status_color ??
+                                                            '#94a3b8') + '18',
+                                                    color:
+                                                        act.to_status_color ??
+                                                        '#64748b',
+                                                    border:
+                                                        '1px solid ' +
+                                                        (act.to_status_color ??
+                                                            '#94a3b8') +
+                                                        '30',
+                                                }"
+                                            >
+                                                {{ act.to_status_label }}
+                                            </Badge>
+                                        </div>
+                                    </td>
+
+                                    <!-- Oleh -->
+                                    <td class="px-4 py-3 text-muted-foreground">
+                                        {{ act.causer }}
+                                    </td>
+
+                                    <!-- Waktu -->
+                                    <td class="px-4 py-3">
+                                        <span
+                                            class="text-muted-foreground text-xs"
+                                            :title="act.created_at"
+                                        >
+                                            {{ act.time_ago }}
+                                        </span>
                                     </td>
                                 </tr>
 
-                                <tr v-if="!props.tickets?.length">
+                                <tr v-if="!props.recentActivities?.length">
                                     <td
                                         colspan="4"
-                                        class="px-5 py-6 text-center text-muted-foreground"
+                                        class="px-5 py-8 text-center text-muted-foreground"
                                     >
-                                        Belum ada permohonan
+                                        Belum ada riwayat aktivitas
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Mobile: Card List -->
+                    <div class="md:hidden divide-y">
+                        <div
+                            v-for="act in props.recentActivities ?? []"
+                            :key="act.id"
+                            class="px-4 py-3 space-y-2 hover:bg-muted/40 transition-colors"
+                        >
+                            <!-- Header: Tiket + Waktu -->
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="font-semibold text-sm text-foreground"
+                                >
+                                    #{{ act.ticket_code }}
+                                </span>
+                                <span
+                                    class="text-[11px] text-muted-foreground flex items-center gap-1"
+                                    :title="act.created_at"
+                                >
+                                    <Clock class="w-3 h-3" />
+                                    {{ act.time_ago }}
+                                </span>
+                            </div>
+
+                            <!-- Perubahan Status -->
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <Badge
+                                    v-if="act.from_status_label"
+                                    class="text-[11px] font-medium"
+                                    :style="{
+                                        padding: '0.15rem 0.5rem',
+                                        backgroundColor:
+                                            (act.from_status_color ??
+                                                '#94a3b8') + '18',
+                                        color:
+                                            act.from_status_color ?? '#64748b',
+                                        border:
+                                            '1px solid ' +
+                                            (act.from_status_color ??
+                                                '#94a3b8') +
+                                            '30',
+                                    }"
+                                >
+                                    {{ act.from_status_label }}
+                                </Badge>
+
+                                <ArrowRight
+                                    v-if="
+                                        act.from_status_label &&
+                                        act.to_status_label
+                                    "
+                                    class="w-3 h-3 text-muted-foreground shrink-0"
+                                />
+
+                                <Badge
+                                    v-if="act.to_status_label"
+                                    class="text-[11px] font-medium"
+                                    :style="{
+                                        padding: '0.15rem 0.5rem',
+                                        backgroundColor:
+                                            (act.to_status_color ?? '#94a3b8') +
+                                            '18',
+                                        color: act.to_status_color ?? '#64748b',
+                                        border:
+                                            '1px solid ' +
+                                            (act.to_status_color ?? '#94a3b8') +
+                                            '30',
+                                    }"
+                                >
+                                    {{ act.to_status_label }}
+                                </Badge>
+                            </div>
+
+                            <!-- Oleh -->
+                            <div
+                                class="flex items-center gap-1.5 text-xs text-muted-foreground"
+                            >
+                                <User class="w-3 h-3" />
+                                {{ act.causer }}
+                            </div>
+                        </div>
+
+                        <div
+                            v-if="!props.recentActivities?.length"
+                            class="px-4 py-8 text-center text-muted-foreground text-sm"
+                        >
+                            Belum ada riwayat aktivitas
+                        </div>
                     </div>
                 </CardContent>
             </Card>

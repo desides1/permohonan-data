@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TicketDetail;
 use App\Models\Attachment;
 use App\Enums\TicketStatus;
+use App\Services\DashboardActivityService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -12,6 +13,9 @@ use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
+    public function __construct(
+        private readonly DashboardActivityService $activityService,
+    ) {}
     public function show(TicketDetail $ticket)
     {
         $ticket->load([
@@ -106,22 +110,7 @@ class TicketController extends Controller
 
         $visibleStatuses = TicketStatus::visibleForRole($role);
 
-        $tickets = TicketDetail::query()
-            ->with(['ticketProgress'])
-            ->whereHas('ticketProgress', function ($q) use ($visibleStatuses) {
-                $q->whereIn('status', array_map(fn($s) => $s->value, $visibleStatuses));
-            })
-            ->latest()
-            ->take(5)
-            ->get()
-            ->map(fn($ticket) => [
-                'ticket_code'        => $ticket->ticket_code,
-                'name'               => $ticket->name,
-                'status'             => $ticket->ticketProgress?->status?->label(),
-                'current_assignment' => $ticket->ticketProgress?->current_assignment?->label(),
-            ]);
-
-        // Hitung distribusi berdasarkan status yang terlihat
+        // Distribusi status
         $distribution = [];
         foreach ($visibleStatuses as $status) {
             $distribution[] = [
@@ -135,9 +124,12 @@ class TicketController extends Controller
             ];
         }
 
+        // Riwayat aktivitas terakhir (delegasi ke service)
+        $recentActivities = $this->activityService->recentActivities($role, 10);
+
         return Inertia::render('Admin/Beranda/Beranda', [
-            'tickets'      => $tickets,
-            'distribution' => $distribution,
+            'distribution'     => $distribution,
+            'recentActivities' => $recentActivities,
         ]);
     }
 
