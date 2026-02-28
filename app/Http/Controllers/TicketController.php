@@ -4,22 +4,42 @@ namespace App\Http\Controllers;
 
 use App\Models\TicketDetail;
 use App\Models\Attachment;
+use App\Models\Seksi;
+use Spatie\Activitylog\Models\Activity;
 use App\Enums\TicketStatus;
 use App\Services\DashboardActivityService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+
 
 class TicketController extends Controller
 {
     public function __construct(
         private readonly DashboardActivityService $activityService,
     ) {}
+
     public function show(TicketDetail $ticket)
     {
+        $user = auth()->user();
+        $role = $user->getRoleNames()->first();
+
+        if ($role === 'seksi') {
+            $isAssigned = $ticket->ticketProgress?->assignments()
+                ->where('assigned_to_user_id', $user->id)
+                ->exists();
+
+            if (! $isAssigned) {
+                abort(403, 'Anda tidak memiliki akses ke tiket ini.');
+            }
+        }
+
         $ticket->load([
             'ticketProgress.assignments.assignedByUser',
+            'ticketProgress.assignments.assignedToUser',
+            'ticketProgress.assignments.seksi',
             'attachments',
             'ticketReplies',
         ]);
@@ -41,7 +61,7 @@ class TicketController extends Controller
             ->values();
 
         // Ambil riwayat aktivitas dari Spatie
-        $activities = \Spatie\Activitylog\Models\Activity::query()
+        $activities = Activity::query()
             ->where('log_name', 'ticket-workflow')
             ->where('subject_type', \App\Models\TicketProgress::class)
             ->where('subject_id', $ticket->ticketProgress->id)
@@ -57,12 +77,30 @@ class TicketController extends Controller
                 'created_at'  => $act->created_at->format('d M Y H:i'),
             ]);
 
+        $seksiList = [];
+        if (Gate::allows('assign', $ticket->ticketProgress)) {
+            $seksiList = Seksi::with(['petugasSeksi' => function ($query) {
+                $query->select('id', 'name', 'email', 'seksi_id');
+            }])
+                ->get()
+                ->map(fn($seksi) => [
+                    'id' => $seksi->id,
+                    'nama' => $seksi->name,
+                    'users' => $seksi->petugasSeksi->map(fn($petugas) => [
+                        'id' => $petugas->id,
+                        'name' => $petugas->name,
+                        'email' => $petugas->email,
+                    ]),
+                ]);
+        }
+
         return Inertia::render('Admin/DataPermohonan/Detail/Show', [
             'ticket'           => $ticket,
             'suratPermohonan'  => $suratPermohonan,
             'lampiranLainnya'  => $lampiranLainnya,
             'is_read'          => $is_read,
             'activities'       => $activities,
+            'seksiList'       => $seksiList,
             'can' => [
                 'verify'           => Gate::allows('verify', $ticket->ticketProgress),
                 'approve'          => Gate::allows('approve', $ticket->ticketProgress),
@@ -113,6 +151,15 @@ class TicketController extends Controller
         // Distribusi status
         $distribution = [];
         foreach ($visibleStatuses as $status) {
+            $count = TicketDetail::query()
+                ->whereHas('ticketProgress', fn($q) => $q->where('status', $status->value))
+                ->when($role === 'seksi', function ($query) use ($user) {
+                    $query->whereHas('ticketProgress.assignments', function ($q) use ($user) {
+                        $q->where('assigned_to_user_id', $user->id);
+                    });
+                })
+                ->count();
+
             $distribution[] = [
                 'label' => $status->label(),
                 'value' => $status->value,
@@ -145,12 +192,20 @@ class TicketController extends Controller
             ->whereHas('ticketProgress', function ($q) use ($visibleStatuses) {
                 $q->whereIn('status', array_map(fn($s) => $s->value, $visibleStatuses));
             })
+
+            ->when($role === 'seksi', function ($query) use ($user) {
+                $query->whereHas('ticketProgress.assignments', function ($q) use ($user) {
+                    $q->where('assigned_to_user_id', $user->id);
+                });
+            })
+
             ->when($request->search, function ($query) use ($request) {
                 $query->where(function ($q) use ($request) {
                     $q->where('ticket_code', 'like', "%{$request->search}%")
                         ->orWhere('name', 'like', "%{$request->search}%");
                 });
             })
+
             ->when($request->status, function ($query) use ($request) {
                 $query->whereHas('ticketProgress', function ($q) use ($request) {
                     $q->where('status', $request->status);
@@ -178,5 +233,48 @@ class TicketController extends Controller
             'filters'  => $request->only('status', 'search', 'sort'),
             'userRole' => $role,
         ]);
+    }
+
+    public function destroy(TicketDetail $ticket)
+    {
+        DB::transaction(function () use ($ticket) {
+            // Hapus file lampiran dari storage
+            foreach ($ticket->attachments as $attachment) {
+                Storage::disk('public')->delete($attachment->file_path);
+            }
+
+            // Hapus relasi terkait
+            $ticket->attachments()->delete();
+            $ticket->ticketReplies()->delete();
+            $ticket->feedbacks()->delete();
+
+            if ($ticket->ticketProgress) {
+                $ticket->ticketProgress->assignments()->delete();
+                $ticket->ticketProgress()->delete();
+            }
+
+            $ticket->delete();
+        });
+
+        return redirect()
+            ->route('admin.tickets.index')
+            ->with('success', 'Tiket berhasil dihapus.');
+    }
+
+    /**
+     * Pimpinan PPKH → Disposisi ke Seksi (UNDER_REVIEW_PPKH → ASSIGNED)
+     */
+    public function confirmDisposition(TicketDetail $ticket)
+    {
+        $ticket->load('ticketProgress');
+
+        Gate::authorize('confirmDisposition', $ticket->ticketProgress);
+
+        $ticket->ticketProgress->update([
+            'status' => TicketStatus::ASSIGNED->value,
+            'current_assignment' => 'Seksi',
+        ]);
+
+        return back()->with('success', 'Disposisi berhasil dikonfirmasi.');
     }
 }

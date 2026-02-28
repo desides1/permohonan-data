@@ -44,14 +44,26 @@ class TicketWorkflowApiController extends Controller
         $this->authorize('assign', $ticket);
 
         $data = $request->validate([
+            'petugas_id' => ['required', 'exists:users,id'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $this->workflow->assignToSeksi($ticket, auth()->user(), $data['notes'] ?? null);
+        $petugasSeksi = User::role('seksi')
+            ->whereNotNull('seksi_id')
+            ->findOrFail($data['petugas_id']);
+
+        $this->workflow->assignToSeksi(
+            $ticket,
+            auth()->user(),
+            $petugasSeksi,
+            $data['notes'] ?? null
+        );
 
         return response()->json([
-            'message' => 'Tiket ditugaskan ke Seksi.',
+            'message' => "Tiket berhasil ditugaskan ke {$petugasSeksi->name}.",
             'status'  => $ticket->fresh()->status->value,
+            'assigned_to' => $petugasSeksi->name,
+            'seksi' => $petugasSeksi->seksi->name,
         ]);
     }
 

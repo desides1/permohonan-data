@@ -28,6 +28,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         // Detail Tiket
         Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
 
+        // Hapus Tiket
+        Route::delete('/tickets/{ticket}', [TicketController::class, 'destroy'])->name('tickets.delete');
+
         // Download Lampiran
         Route::get('/attachments/{attachment}/download', [TicketController::class, 'download'])->name('attachments.download');
 
@@ -62,6 +65,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
             // Tolak
             Route::post('/reject', [TicketWorkflowController::class, 'reject'])->name('reject');
+
+            Route::post('/confirm-disposition', [TicketController::class, 'confirmDisposition'])->name('confirmDisposition');
         });
     });
 

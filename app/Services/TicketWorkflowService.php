@@ -53,19 +53,27 @@ class TicketWorkflowService
     /**
      * Pimpinan PPKH disposisi ke Seksi → ASSIGNED.
      */
-    public function assignToSeksi(TicketProgress $ticket, User $performer, ?string $notes = null): void
+    public function assignToSeksi(TicketProgress $ticket, User $performer, User $petugasSeksi, ?string $notes = null): void
     {
-        DB::transaction(function () use ($ticket, $performer, $notes) {
+        DB::transaction(function () use ($ticket, $performer, $petugasSeksi, $notes) {
+            $SeksiName = $petugasSeksi->seksi ? $petugasSeksi->seksi->name : 'Seksi';
+
             $ticket->transitionTo(TicketStatus::ASSIGNED, $notes ?? 'Ditugaskan ke Seksi.');
 
             $ticket->assignments()->create([
                 'assignment'  => TicketAssignment::SEKSI,
+                'assigned_to_user_id' => $petugasSeksi->id,
                 'assigned_by' => $performer->id,
+                'seksi_id'   => $petugasSeksi->seksi_id,
                 'notes'       => $notes ?? 'Disposisi ke Seksi untuk penyiapan data.',
             ]);
 
-            $this->logger->log($ticket, 'assign', "Tiket #{$ticket->ticketDetails->ticket_code} ditugaskan ke Seksi oleh {$performer->name}.", [
+            $this->logger->log($ticket, 'assign', "Tiket #{$ticket->ticketDetails->ticket_code} ditugaskan ke {$petugasSeksi->name} ({$SeksiName}) oleh {$performer->name}.", [
                 'assigned_to' => TicketAssignment::SEKSI->label(),
+                'assigned_to_user_id' => $petugasSeksi->id,
+                'assigned_to_user_name' => $petugasSeksi->name,
+                'seksi_id' => $petugasSeksi->seksi_id,
+                'seksi_name' => $SeksiName,
             ]);
         });
     }

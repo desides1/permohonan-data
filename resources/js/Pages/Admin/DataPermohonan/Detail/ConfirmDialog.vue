@@ -6,87 +6,89 @@ const props = defineProps({
         type: Boolean,
         required: true,
     },
-    actionType: {
+    title: {
         type: String,
-        required: true, // 'approve' | 'reject'
+        default: "Konfirmasi Tindakan",
     },
-    rejectReason: {
+    message: {
         type: String,
         default: "",
     },
+    color: {
+        type: String,
+        default: "green",
+    },
+    needsReason: {
+        type: Boolean,
+        default: false,
+    },
+    reasonValue: {
+        type: String,
+        default: "",
+    },
+    isSubmitting: {
+        type: Boolean,
+        default: false,
+    },
 });
 
-const emit = defineEmits(["close", "update:rejectReason", "confirm"]);
+const emit = defineEmits(["close", "update:reasonValue", "confirm"]);
 
-const isRejectInvalid = computed(
-    () => props.actionType === "reject" && props.rejectReason.length < 10,
+const isReasonInvalid = computed(
+    () => props.needsReason && props.reasonValue.length < 10,
 );
+
+const colorClasses = computed(() => {
+    const map = {
+        green: "bg-green-600 hover:bg-green-700",
+        blue: "bg-blue-600 hover:bg-blue-700",
+        orange: "bg-orange-600 hover:bg-orange-700",
+        red: "bg-red-600 hover:bg-red-700",
+    };
+    return map[props.color] || map.green;
+});
 </script>
 
 <template>
     <div
         v-if="open"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+        @click.self="emit('close')"
     >
-        <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-            <h2 class="text-base font-semibold text-gray-800">
-                Konfirmasi Tindakan
-            </h2>
+        <div
+            class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl space-y-4"
+        >
+            <h3 class="text-lg font-semibold text-gray-800">
+                {{ title }}
+            </h3>
 
-            <p class="mt-2 text-sm text-gray-600">
-                Apakah Anda yakin ingin
-                <strong>
-                    {{
-                        actionType === "approve"
-                            ? "menyetujui"
-                            : actionType === "verify"
-                              ? "memverifikasi"
-                              : actionType === "reject"
-                                ? "menolak"
-                                : ""
-                    }}
-                </strong>
-                permohonan ini?
-            </p>
+            <p class="text-sm text-gray-600">{{ message }}</p>
 
-            <div v-if="actionType === 'reject'" class="mt-4">
-                <label class="text-sm font-medium text-gray-700">
-                    Alasan Penolakan
-                </label>
-
+            <!-- Reason Field -->
+            <div v-if="needsReason">
                 <textarea
-                    :value="rejectReason"
-                    @input="emit('update:rejectReason', $event.target.value)"
+                    :value="reasonValue"
+                    @input="emit('update:reasonValue', $event.target.value)"
                     rows="3"
-                    minlength="10"
-                    class="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:border-red-500 focus:ring-red-500"
-                    placeholder="Minimal 10 karakter"
-                />
+                    class="w-full rounded-lg border-gray-300 text-sm focus:ring-green-500 focus:border-green-500"
+                    placeholder="Tuliskan alasan (min. 10 karakter)..."
+                ></textarea>
             </div>
 
-            <div class="mt-6 flex justify-end gap-2">
+            <div class="flex justify-end gap-3">
                 <button
                     @click="emit('close')"
-                    class="rounded-md border px-4 py-2 text-sm hover:bg-gray-50"
+                    class="rounded-lg border px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
                 >
                     Batal
                 </button>
-
                 <button
                     @click="emit('confirm')"
-                    :disabled="isRejectInvalid"
-                    class="rounded-md px-4 py-2 text-sm font-medium text-white"
-                    :class="
-                        actionType === 'verify'
-                            ? 'bg-yellow-700 hover:bg-yellow-800 disabled:opacity-50'
-                            : actionType === 'approve'
-                              ? 'bg-green-700 hover:bg-green-800'
-                              : actionType === 'reject'
-                                ? 'bg-red-700 hover:bg-red-800 disabled:opacity-50'
-                                : 'bg-yellow-700 hover:bg-yellow-800 disabled:opacity-50'
-                    "
+                    :disabled="isSubmitting || isReasonInvalid"
+                    class="rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                    :class="colorClasses"
                 >
-                    Ya, Lanjutkan
+                    {{ isSubmitting ? "Memproses..." : "Ya, Lanjutkan" }}
                 </button>
             </div>
         </div>

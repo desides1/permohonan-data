@@ -13,6 +13,8 @@ class Assignment extends Model
 
     protected $fillable = [
         'ticket_progress_id',
+        'assigned_to_user_id',
+        'seksi_id',
         'assignment',
         'assigned_by',
         'notes',
@@ -42,5 +44,15 @@ class Assignment extends Model
     public function assignedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_by');
+    }
+
+    public function assignedToUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to_user_id');
+    }
+
+    public function seksi(): BelongsTo
+    {
+        return $this->belongsTo(Seksi::class);
     }
 }

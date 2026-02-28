@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TicketProgress;
+use App\Models\User;
 use App\Services\TicketWorkflowService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -47,12 +48,24 @@ class TicketWorkflowController extends Controller
         $this->authorize('assign', $ticket);
 
         $data = $request->validate([
-            'notes' => ['nullable', 'string', 'max:1000'],
+            'petugas_id' => ['required', 'exists:users,id'],
+            'notes'      => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $this->workflow->assignToSeksi($ticket, auth()->user(), $data['notes'] ?? null);
+        $petugasSeksi = User::role('seksi')
+            ->whereNotNull('seksi_id')
+            ->findOrFail($data['petugas_id']);
 
-        return back()->with('success', 'Tiket berhasil ditugaskan ke Seksi.');
+        $this->workflow->assignToSeksi(
+            $ticket,
+            auth()->user(),
+            $petugasSeksi,
+            $data['notes'] ?? null
+        );
+
+        $seksiName = $petugasSeksi->seksi ? $petugasSeksi->seksi->name : 'Seksi';
+
+        return back()->with('success', "Tiket berhasil ditugaskan ke {$petugasSeksi->name} ({$seksiName}).");
     }
 
     /**

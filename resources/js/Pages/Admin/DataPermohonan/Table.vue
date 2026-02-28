@@ -1,6 +1,5 @@
 <script setup>
-// filepath: d:\TA\project-manajemen-permohonan-bpkh\permohonan-data-bpkh\resources\js\Pages\Admin\DataPermohonan\Table.vue
-import { Link } from "@inertiajs/vue3";
+import { Link, router } from "@inertiajs/vue3";
 
 const props = defineProps({
     tickets: {
@@ -16,6 +15,16 @@ const props = defineProps({
 const canShowDisposisi = ["pimpinan_bpkh", "pimpinan_ppkh"].includes(
     props.userRole,
 );
+
+function confirmDelete(ticketCode) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus tiket #${ticketCode}?`)) {
+        return;
+    }
+
+    router.delete(route("admin.tickets.delete", ticketCode), {
+        preserveScroll: true,
+    });
+}
 </script>
 
 <template>
@@ -114,8 +123,45 @@ const canShowDisposisi = ["pimpinan_bpkh", "pimpinan_ppkh"].includes(
                                     class="text-green-600 hover:text-green-800"
                                     title="Lihat Detail"
                                 >
-                                    👁️
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="w-5 h-5"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        <path
+                                            d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                                        />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
                                 </Link>
+                                <!-- Hapus Tiket -->
+                                <button
+                                    type="button"
+                                    class="text-red-600 hover:text-red-800"
+                                    title="Hapus Tiket"
+                                    @click="confirmDelete(ticket.ticket_code)"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="w-5 h-5"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        <path d="M3 6h18" />
+                                        <path d="M19 6l-1 14H6L5 6" />
+                                        <path d="M10 11v6" />
+                                        <path d="M14 11v6" />
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                     </tr>

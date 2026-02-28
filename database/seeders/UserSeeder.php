@@ -35,13 +35,13 @@ class UserSeeder extends Seeder
                 'role' => 'pimpinan_ppkh',
             ],
             [
-                'name' => 'Seksi 1',
-                'email' => 'seksi1@ticket.test',
+                'name' => 'Petugas Seksi 1',
+                'email' => 'petugas.seksi1@ticket.test',
                 'role' => 'seksi',
             ],
             [
-                'name' => 'Seksi 2',
-                'email' => 'seksi2@ticket.test',
+                'name' => 'Petugas Seksi 2',
+                'email' => 'petugas.seksi2@ticket.test',
                 'role' => 'seksi',
             ],
         ];

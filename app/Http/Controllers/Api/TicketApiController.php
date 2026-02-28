@@ -22,17 +22,27 @@ class TicketApiController extends Controller
         $visibleStatuses = TicketStatus::visibleForRole($role);
 
         $tickets = TicketDetail::query()
-            ->with(['ticketProgress.latestAssignment'])
+            ->with(['ticketProgress'])
             ->whereHas('ticketProgress', function ($q) use ($visibleStatuses) {
                 $q->whereIn('status', array_map(fn($s) => $s->value, $visibleStatuses));
+            })
+            ->when($role === 'seksi', function ($query) use ($user) {
+                $query->whereHas('ticketProgress.assignments', function ($q) use ($user) {
+                    $q->where('assigned_to_user_id', $user->id);
+                });
             })
             ->latest()
             ->paginate($request->input('per_page', 15));
 
-        return response()->json([
-            'role'    => $role,
-            'tickets' => $tickets,
+        $mapped = $tickets->through(fn(TicketDetail $t) => [
+            'ticket_code'  => $t->ticket_code,
+            'name'         => $t->name,
+            'status'       => $t->ticketProgress?->status?->label(),
+            'status_value' => $t->ticketProgress?->status?->value,
+            'is_read'      => $t->ticketProgress?->is_read ?? false,
+            'created_at'   => $t->created_at->format('d M Y H:i'),
         ]);
+        return response()->json($mapped);
     }
 
     /**

@@ -1,8 +1,8 @@
 <script setup>
 import LayoutDashboard from "@/Layouts/LayoutDashboard.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
-import { ref } from "vue";
-import { router } from "@inertiajs/vue3";
+import DispositionConfirmAction from "./DispositionConfirmAction.vue";
+import { useActionDialog } from "./useActionDialog";
 
 const props = defineProps({
     ticket: Object,
@@ -10,134 +10,25 @@ const props = defineProps({
     suratPermohonan: Object,
     lampiranLainnya: Array,
     activities: Array,
+    seksiList: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const fileUrl = (path) => `/storage/${path}`;
 
-/* ────────── Dialog State ────────── */
-const dialogOpen = ref(false);
-const actionType = ref("");
-const actionReason = ref("");
-const actionNotes = ref("");
-const isSubmitting = ref(false);
-
-const actionConfig = {
-    verify: {
-        title: "Verifikasi Permohonan",
-        message:
-            "Apakah Anda yakin ingin memverifikasi dan meneruskan ke Pimpinan BPKH?",
-        color: "green",
-        needsReason: false,
-    },
-    approve: {
-        title: "Setujui Permohonan",
-        message:
-            "Apakah Anda yakin ingin menyetujui dan meneruskan ke Pimpinan PPKH?",
-        color: "green",
-        needsReason: false,
-    },
-    assign: {
-        title: "Disposisi ke Seksi",
-        message: "Apakah Anda yakin ingin menugaskan permohonan ini ke Seksi?",
-        color: "blue",
-        needsReason: false,
-        needsNotes: true,
-    },
-    markReady: {
-        title: "Tandai Data Siap",
-        message: "Apakah Anda yakin data sudah siap untuk direview?",
-        color: "green",
-        needsReason: false,
-    },
-    reviewPpkh: {
-        title: "Review Data",
-        message: "Mulai review data permohonan ini?",
-        color: "blue",
-        needsReason: false,
-    },
-    forwardToBpkh: {
-        title: "Teruskan ke Pimpinan BPKH",
-        message:
-            "Data sudah direview. Teruskan ke Pimpinan BPKH untuk persetujuan final?",
-        color: "green",
-        needsReason: false,
-    },
-    requestRevision: {
-        title: "Minta Revisi",
-        message: "Jelaskan alasan revisi:",
-        color: "orange",
-        needsReason: true,
-    },
-    finalApprove: {
-        title: "Persetujuan Final",
-        message: "Apakah Anda yakin memberikan persetujuan final?",
-        color: "green",
-        needsReason: false,
-    },
-    finalize: {
-        title: "Selesaikan Permohonan",
-        message: "Apakah Anda yakin ingin menyelesaikan permohonan ini?",
-        color: "green",
-        needsReason: false,
-    },
-    reject: {
-        title: "Tolak Permohonan",
-        message: "Jelaskan alasan penolakan:",
-        color: "red",
-        needsReason: true,
-    },
-};
-
-function openDialog(type) {
-    actionType.value = type;
-    actionReason.value = "";
-    actionNotes.value = "";
-    dialogOpen.value = true;
-}
-
-function closeDialog() {
-    dialogOpen.value = false;
-    isSubmitting.value = false;
-}
-
-function submitAction() {
-    if (isSubmitting.value) return;
-    isSubmitting.value = true;
-
-    const id = props.ticket.ticket_progress.id;
-    const routeMap = {
-        verify: "admin.tickets.verify",
-        approve: "admin.tickets.approve",
-        assign: "admin.tickets.assign",
-        markReady: "admin.tickets.markReady",
-        reviewPpkh: "admin.tickets.reviewPpkh",
-        forwardToBpkh: "admin.tickets.forwardToBpkh",
-        requestRevision: "admin.tickets.requestRevision",
-        finalApprove: "admin.tickets.finalApprove",
-        finalize: "admin.tickets.finalize",
-        reject: "admin.tickets.reject",
-    };
-
-    const routeName = routeMap[actionType.value];
-    if (!routeName) return;
-
-    const data = {};
-    if (
-        actionType.value === "reject" ||
-        actionType.value === "requestRevision"
-    ) {
-        data.reason = actionReason.value;
-    }
-    if (actionType.value === "assign") {
-        data.notes = actionNotes.value;
-    }
-
-    router.post(route(routeName, id), data, {
-        onFinish: () => closeDialog(),
-    });
-}
-
-const currentConfig = () => actionConfig[actionType.value] || {};
+const {
+    confirmOpen,
+    disposisiOpen,
+    actionReason,
+    isSubmitting,
+    currentConfig,
+    openDialog,
+    closeAllDialogs,
+    submitConfirm,
+    submitDisposisi,
+} = useActionDialog(() => props.ticket.ticket_progress.id);
 </script>
 
 <template>
@@ -168,7 +59,6 @@ const currentConfig = () => actionConfig[actionType.value] || {};
                         }}
                     </span>
 
-                    <!-- Status badge — warna dari backend -->
                     <span
                         class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
                         :style="{
@@ -288,7 +178,6 @@ const currentConfig = () => actionConfig[actionType.value] || {};
                 <h2 class="mb-3 font-semibold text-gray-800">
                     Catatan Untuk Pemohon (Opsional)
                 </h2>
-
                 <textarea
                     rows="4"
                     placeholder="Tuliskan catatan"
@@ -406,75 +295,30 @@ const currentConfig = () => actionConfig[actionType.value] || {};
             </div>
         </div>
 
-        <!-- Confirm Dialog -->
+        <!-- Dialog Konfirmasi Umum -->
         <Teleport to="body">
-            <div
-                v-if="dialogOpen"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-                @click.self="closeDialog"
-            >
-                <div
-                    class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl space-y-4"
-                >
-                    <h3 class="text-lg font-semibold text-gray-800">
-                        {{ currentConfig().title }}
-                    </h3>
+            <ConfirmDialog
+                :open="confirmOpen"
+                :title="currentConfig.title"
+                :message="currentConfig.message"
+                :color="currentConfig.color"
+                :needs-reason="currentConfig.needsReason"
+                v-model:reason-value="actionReason"
+                :is-submitting="isSubmitting"
+                @close="closeAllDialogs"
+                @confirm="submitConfirm"
+            />
+        </Teleport>
 
-                    <p class="text-sm text-gray-600">
-                        {{ currentConfig().message }}
-                    </p>
-
-                    <!-- Reason Field -->
-                    <div v-if="currentConfig().needsReason">
-                        <textarea
-                            v-model="actionReason"
-                            rows="3"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:ring-green-500 focus:border-green-500"
-                            placeholder="Tuliskan alasan (min. 10 karakter)..."
-                        ></textarea>
-                    </div>
-
-                    <!-- Notes Field -->
-                    <div v-if="currentConfig().needsNotes">
-                        <textarea
-                            v-model="actionNotes"
-                            rows="3"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:ring-green-500 focus:border-green-500"
-                            placeholder="Catatan (opsional)..."
-                        ></textarea>
-                    </div>
-
-                    <div class="flex justify-end gap-3">
-                        <button
-                            @click="closeDialog"
-                            class="rounded-lg border px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            @click="submitAction"
-                            :disabled="
-                                isSubmitting ||
-                                (currentConfig().needsReason &&
-                                    actionReason.length < 10)
-                            "
-                            class="rounded-lg px-4 py-2 text-sm text-white disabled:opacity-50"
-                            :class="{
-                                'bg-green-600 hover:bg-green-700':
-                                    currentConfig().color === 'green',
-                                'bg-blue-600 hover:bg-blue-700':
-                                    currentConfig().color === 'blue',
-                                'bg-orange-600 hover:bg-orange-700':
-                                    currentConfig().color === 'orange',
-                                'bg-red-600 hover:bg-red-700':
-                                    currentConfig().color === 'red',
-                            }"
-                        >
-                            {{ isSubmitting ? "Memproses..." : "Konfirmasi" }}
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <!-- Dialog Disposisi Seksi -->
+        <Teleport to="body">
+            <DispositionConfirmAction
+                :open="disposisiOpen"
+                :seksi-list="seksiList"
+                :is-submitting="isSubmitting"
+                @close="closeAllDialogs"
+                @confirm="submitDisposisi"
+            />
         </Teleport>
     </LayoutDashboard>
 </template>
