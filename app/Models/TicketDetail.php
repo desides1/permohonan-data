@@ -60,4 +60,9 @@ class TicketDetail extends Model
     {
         return $this->hasMany(TicketReply::class, 'ticket_detail_id', 'id');
     }
+
+    public function documents()
+    {
+        return $this->hasMany(DocumentDrive::class, 'ticket_detail_id', 'id');
+    }
 }

@@ -2,13 +2,19 @@
 import LayoutDashboard from "@/Layouts/LayoutDashboard.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import DispositionConfirmAction from "./DispositionConfirmAction.vue";
+import DialogUploadData from "./DialogUploadData.vue";
 import { useActionDialog } from "./useActionDialog";
+import { router } from "@inertiajs/vue3";
 
 const props = defineProps({
     ticket: Object,
     can: Object,
     suratPermohonan: Object,
     lampiranLainnya: Array,
+    uploadedDocuments: {
+        type: Array,
+        default: () => [],
+    },
     activities: Array,
     seksiList: {
         type: Array,
@@ -29,6 +35,29 @@ const {
     submitConfirm,
     submitDisposisi,
 } = useActionDialog(() => props.ticket.ticket_progress.id);
+
+function formatFileSize(bytes) {
+    if (!bytes || bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+function onUploaded() {
+    router.reload({ only: ["uploadedDocuments", "activities"] });
+}
+
+function deleteDocument(docId) {
+    if (!confirm("Apakah Anda yakin ingin menghapus dokumen ini?")) return;
+
+    router.delete(route("admin.documents.delete", docId), {
+        preserveScroll: true,
+        onSuccess: () => {
+            router.reload({ only: ["uploadedDocuments", "activities"] });
+        },
+    });
+}
 </script>
 
 <template>
@@ -167,6 +196,74 @@ const {
                         >
                             Unduh
                         </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dokumen Hasil Permohonan (Upload dari Seksi) -->
+            <section class="rounded-xl border bg-white p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-semibold text-gray-800">
+                        📁 Dokumen Hasil Permohonan
+                    </h2>
+                    <DialogUploadData
+                        v-if="can.upload"
+                        :ticket-code="ticket.ticket_code"
+                        :ticket-name="ticket.name"
+                        @uploaded="onUploaded"
+                    />
+                </div>
+
+                <div
+                    v-if="uploadedDocuments.length === 0"
+                    class="text-center py-8 text-gray-400"
+                >
+                    <p class="text-sm">
+                        Belum ada dokumen hasil yang diupload.
+                    </p>
+                </div>
+
+                <div v-else class="space-y-3">
+                    <div
+                        v-for="doc in uploadedDocuments"
+                        :key="doc.id"
+                        class="flex items-center justify-between gap-4 rounded-lg border p-4 hover:bg-gray-50 transition-colors"
+                    >
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate">
+                                {{ doc.original_name }}
+                            </p>
+                            <div
+                                class="flex flex-wrap gap-3 text-xs text-gray-500 mt-1"
+                            >
+                                <span>{{ formatFileSize(doc.file_size) }}</span>
+                                <span>Oleh: {{ doc.uploaded_by }}</span>
+                                <span>{{ doc.uploaded_at }}</span>
+                            </div>
+                            <p
+                                v-if="doc.keterangan"
+                                class="text-xs text-gray-600 mt-1 italic"
+                            >
+                                {{ doc.keterangan }}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a
+                                :href="
+                                    route('admin.documents.download', doc.id)
+                                "
+                                class="rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100 transition-colors"
+                            >
+                                ⬇️ Unduh
+                            </a>
+                            <button
+                                v-if="can.deleteDocument"
+                                @click="deleteDocument(doc.id)"
+                                class="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors"
+                            >
+                                🗑️ Hapus
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>

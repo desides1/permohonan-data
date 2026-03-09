@@ -78,4 +78,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Assignment::class, 'assigned_to_user_id');
     }
+
+    public function uploadedDocuments()
+    {
+        return $this->hasMany(DocumentDrive::class, 'uploaded_by');
+    }
 }

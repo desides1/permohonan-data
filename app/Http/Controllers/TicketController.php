@@ -5,9 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\TicketDetail;
 use App\Models\Attachment;
 use App\Models\Seksi;
+use App\Models\DocumentDrive;
+use App\Models\TicketProgress;
+use App\Models\DocumentsDrive;
+use App\Notifications\TicketUploadedNotification;
 use Spatie\Activitylog\Models\Activity;
 use App\Enums\TicketStatus;
 use App\Services\DashboardActivityService;
+use App\Services\TicketService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +24,7 @@ class TicketController extends Controller
 {
     public function __construct(
         private readonly DashboardActivityService $activityService,
+        private readonly TicketService $ticketService,
     ) {}
 
     public function show(TicketDetail $ticket)
@@ -42,6 +48,7 @@ class TicketController extends Controller
             'ticketProgress.assignments.seksi',
             'attachments',
             'ticketReplies',
+            'documents.uploader',
         ]);
 
         $is_read = $ticket->ticketProgress?->update(['is_read' => true]);
@@ -60,10 +67,20 @@ class TicketController extends Controller
             ->filter(fn($a) => ! str_contains($a->file_path, 'surat_permohonan'))
             ->values();
 
+        $uploadedDocuments = $ticket->documents->map(fn(DocumentDrive $doc) => [
+            'id' => $doc->id,
+            'original_name' => $doc->original_name,
+            'mime_type' => $doc->mime_type,
+            'file_size' => $doc->file_size,
+            'keterangan' => $doc->keterangan,
+            'uploaded_by' => $doc->uploader?->name,
+            'uploaded_at' => $doc->created_at->format('d M Y H:i'),
+        ]);
+
         // Ambil riwayat aktivitas dari Spatie
         $activities = Activity::query()
             ->where('log_name', 'ticket-workflow')
-            ->where('subject_type', \App\Models\TicketProgress::class)
+            ->where('subject_type', TicketProgress::class)
             ->where('subject_id', $ticket->ticketProgress->id)
             ->latest()
             ->get()
@@ -94,10 +111,18 @@ class TicketController extends Controller
                 ]);
         }
 
+        $canUpload = $role === 'seksi' && in_array($ticket->ticketProgress?->status, [
+            TicketStatus::ASSIGNED,
+            TicketStatus::REVISION,
+        ]);
+
+        $canDeleteDocument = $canUpload;
+
         return Inertia::render('Admin/DataPermohonan/Detail/Show', [
             'ticket'           => $ticket,
             'suratPermohonan'  => $suratPermohonan,
             'lampiranLainnya'  => $lampiranLainnya,
+            'uploadedDocuments' => $uploadedDocuments,
             'is_read'          => $is_read,
             'activities'       => $activities,
             'seksiList'       => $seksiList,
@@ -113,8 +138,92 @@ class TicketController extends Controller
                     || Gate::allows('requestRevisionBpkh', $ticket->ticketProgress),
                 'finalApprove'     => Gate::allows('finalApprove', $ticket->ticketProgress),
                 'finalize'         => Gate::allows('finalize', $ticket->ticketProgress),
+                'upload'           => $canUpload,
+                'deleteDocument'   => $canDeleteDocument,
             ],
         ]);
+    }
+
+    public function uploadHasil(Request $request, TicketDetail $ticket)
+    {
+        $user = auth()->user();
+        $role = $user->getRoleNames()->first();
+
+        if ($role !== 'seksi') {
+            abort(403, 'Hanya petugas seksi yang dapat mengupload hasil.');
+        }
+
+        $isAssigned = $ticket->ticketProgress?->assignments()
+            ->where('assigned_to_user_id', $user->id)
+            ->exists();
+
+        if (! $isAssigned) {
+            abort(403, 'Anda tidak ditugaskan untuk tiket ini.');
+        }
+
+        if (! in_array($ticket->ticketProgress?->status, [TicketStatus::ASSIGNED, TicketStatus::REVISION])) {
+            abort(403, 'Tiket tidak dalam status yang memungkinkan untuk upload hasil.');
+        }
+
+        $request->validate([
+            'files'     => ['required', 'array', 'min:1'],
+            'files.*'   => ['required', 'file', 'max:51200'],
+            'keterangan' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $documents = $this->ticketService->uploadMultipleFiles(
+            $ticket,
+            $request->file('files'),
+            $request->input('keterangan')
+        );
+
+        return back()->with('success', count($documents) . ' file berhasil diupload.');
+    }
+
+    public function downloadDocument(DocumentDrive $document)
+    {
+        $ticket = $document->ticketDetail;
+        $user   = auth()->user();
+        $role   = $user->getRoleNames()->first();
+
+        if ($role === 'seksi') {
+            $isAssigned = $ticket->ticketProgress?->assignments()
+                ->where('assigned_to_user_id', $user->id)
+                ->exists();
+
+            if (! $isAssigned) {
+                abort(403, 'Anda tidak memiliki akses.');
+            }
+        }
+
+        return $this->ticketService->downloadDocument($document);
+    }
+
+    public function deleteDocument(DocumentDrive $document)
+    {
+        $ticket = $document->ticketDetail;
+        $user   = auth()->user();
+        $role   = $user->getRoleNames()->first();
+
+        if ($role !== 'seksi') {
+            abort(403, 'Hanya petugas seksi yang dapat menghapus dokumen.');
+        }
+
+        $isAssigned = $ticket->ticketProgress?->assignments()
+            ->where('assigned_to_user_id', $user->id)
+            ->exists();
+
+        if (! $isAssigned) {
+            abort(403, 'Anda tidak memiliki akses.');
+        }
+
+        if (! in_array($ticket->ticketProgress?->status, [TicketStatus::ASSIGNED, TicketStatus::REVISION])) {
+            abort(403, 'Tiket tidak dalam status yang memungkinkan untuk menghapus dokumen.');
+        }
+
+        $this->ticketService->deleteDocument($document);
+
+        return back()->with('success', 'Dokumen berhasil dihapus.');
     }
 
     public function download(int $attachmentId)
@@ -127,7 +236,7 @@ class TicketController extends Controller
             abort(404, 'File tidak ditemukan.');
         }
 
-        $ticket    = $attachment->ticketDetail;
+        $ticket     = $attachment->ticketDetail;
         $ticketCode = $ticket->ticket_code;
         $pemohon    = str($ticket->name)->lower()->replace(' ', '-');
 
@@ -277,4 +386,41 @@ class TicketController extends Controller
 
         return back()->with('success', 'Disposisi berhasil dikonfirmasi.');
     }
+
+    // public function uploadResultFile(Ticket $ticket, $file)
+    // {
+    //     $folderId = $ticket->drive_folder_id;
+
+    //     if (!$folderId) {
+    //         $folderId = $this->googleDriveService->createFolder(
+    //             'ticket-' . $ticket->id
+    //         );
+
+    //         $ticket->update([
+    //             'drive_folder_id' => $folderId
+    //         ]);
+    //     }
+
+    //     $fileId = $this->googleDriveService->uploadFile(
+    //         $file,
+    //         time() . '_' . $file->getClientOriginalName(),
+    //         $folderId
+    //     );
+
+    //     $ticket->documents()->create([
+    //         'drive_file_id' => $fileId,
+    //         'original_name' => $file->getClientOriginalName(),
+    //         'mime_type' => $file->getMimeType(),
+    //         'uploaded_by' => auth()->id(),
+    //     ]);
+
+    //     return $fileId;
+    // }
+
+    // public function download(TicketDocument $document)
+    // {
+    //     $this->authorize('view', $document);
+
+    //     return $this->ticketService->downloadDocument($document);
+    // }
 }

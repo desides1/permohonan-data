@@ -27,4 +27,17 @@ class TicketActivityLogger
             ], $properties))
             ->log($description);
     }
+
+    //log upload document
+    public function logUploadDocument(TicketProgress $ticketProgress, string $fileName): void
+    {
+        $ticketProgress->loadMissing('ticketDetails');
+
+        $this->log(
+            $ticketProgress,
+            'upload_document',
+            "Document '{$fileName}' diupload untuk tiket #{$ticketProgress->ticketDetails->ticket_code} oleh " . Auth::user()->name . '.',
+            ['file_name' => $fileName]
+        );
+    }
 }

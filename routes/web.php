@@ -34,6 +34,10 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         // Download Lampiran
         Route::get('/attachments/{attachment}/download', [TicketController::class, 'download'])->name('attachments.download');
 
+        Route::post('/tickets/{ticket}/upload-hasil', [TicketController::class, 'uploadHasil'])->name('tickets.uploadHasil');
+        Route::get('/documents/{document}/download', [TicketController::class, 'downloadDocument'])->name('documents.download');
+        Route::delete('/documents/{document}', [TicketController::class, 'deleteDocument'])->name('documents.delete');
+
         // ─── Workflow Routes ────────────────────────
         Route::prefix('tickets/{ticket}')->name('tickets.')->group(function () {
             // Admin TU: verifikasi
