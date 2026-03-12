@@ -7,6 +7,7 @@ defineProps({
     tickets: Object,
     filters: Object,
     sort: String,
+    userRole: String,
 });
 </script>
 
@@ -26,7 +27,7 @@ defineProps({
             <!-- Filter -->
             <Filters :filters="filters" />
             <!-- Table -->
-            <Table :tickets="tickets" />
+            <Table :tickets="tickets" :user-role="userRole" />
         </section>
     </LayoutDashboard>
 </template>

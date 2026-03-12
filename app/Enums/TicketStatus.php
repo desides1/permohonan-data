@@ -116,17 +116,22 @@ enum TicketStatus: string
                 self::REJECTED,
                 self::UNDER_REVIEW_BPKH,
                 self::FINAL_APPROVED,
+                self::COMPLETED
             ],
             'pimpinan_ppkh' => [
                 self::APPROVED,
                 self::ASSIGNED,
+                self::READY,
                 self::UNDER_REVIEW_PPKH,
+                self::UNDER_REVIEW_BPKH,
                 self::REVISION,
             ],
             'seksi' => [
                 self::ASSIGNED,
                 self::READY,
                 self::REVISION,
+                self::UNDER_REVIEW_PPKH,
+                self::UNDER_REVIEW_BPKH,
             ],
             default => [],
         };

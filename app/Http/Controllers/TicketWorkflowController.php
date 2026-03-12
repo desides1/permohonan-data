@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\TicketWorkflowService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class TicketWorkflowController extends Controller
 {
@@ -116,6 +117,10 @@ class TicketWorkflowController extends Controller
             $this->authorize('requestRevision', $ticket);
         } else {
             $this->authorize('requestRevisionBpkh', $ticket);
+        }
+
+        if (! Gate::allows('requestRevision', $ticket) && ! Gate::allows('requestRevisionBpkh', $ticket)) {
+            abort(403);
         }
 
         $data = $request->validate([

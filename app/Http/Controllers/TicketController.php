@@ -58,6 +58,18 @@ class TicketController extends Controller
                 'status_color',
                 $ticket->ticketProgress->status?->color(),
             );
+            $ticket->ticketProgress->setAttribute(
+                'status_label',
+                $ticket->ticketProgress->status?->label(),
+            );
+            $ticket->ticketProgress->setAttribute(
+                'status_value',
+                $ticket->ticketProgress->status?->value,
+            );
+            $ticket->ticketProgress->setAttribute(
+                'current_assignment_label',
+                $ticket->ticketProgress->current_assignment?->label(),
+            );
         }
 
         $suratPermohonan = $ticket->attachments
@@ -90,6 +102,7 @@ class TicketController extends Controller
                 'action'      => $act->properties['action'] ?? null,
                 'from_status' => $act->properties['from_status'] ?? null,
                 'to_status'   => $act->properties['to_status'] ?? null,
+                'reason'      => $act->properties['reason'] ?? null,
                 'causer'      => $act->causer?->name,
                 'created_at'  => $act->created_at->format('d M Y H:i'),
             ]);
@@ -118,6 +131,13 @@ class TicketController extends Controller
 
         $canDeleteDocument = $canUpload;
 
+        $canRequestReview = $role === 'seksi'
+            && in_array($ticket->ticketProgress?->status, [
+                TicketStatus::ASSIGNED,
+                TicketStatus::REVISION,
+            ])
+            && $ticket->documents->isNotEmpty();
+
         return Inertia::render('Admin/DataPermohonan/Detail/Show', [
             'ticket'           => $ticket,
             'suratPermohonan'  => $suratPermohonan,
@@ -126,6 +146,7 @@ class TicketController extends Controller
             'is_read'          => $is_read,
             'activities'       => $activities,
             'seksiList'       => $seksiList,
+            'userRole'       => $role,
             'can' => [
                 'verify'           => Gate::allows('verify', $ticket->ticketProgress),
                 'approve'          => Gate::allows('approve', $ticket->ticketProgress),
@@ -140,6 +161,7 @@ class TicketController extends Controller
                 'finalize'         => Gate::allows('finalize', $ticket->ticketProgress),
                 'upload'           => $canUpload,
                 'deleteDocument'   => $canDeleteDocument,
+                'requestReview'    => $canRequestReview,
             ],
         ]);
     }
@@ -274,9 +296,7 @@ class TicketController extends Controller
                 'value' => $status->value,
                 'color' => $status->color(),
                 'icon'  => $status->icon(),
-                'count' => TicketDetail::query()
-                    ->whereHas('ticketProgress', fn($q) => $q->where('status', $status->value))
-                    ->count(),
+                'count' => $count,
             ];
         }
 
@@ -352,10 +372,20 @@ class TicketController extends Controller
                 Storage::disk('public')->delete($attachment->file_path);
             }
 
+            // Hapus dokumen Google Drive
+            foreach ($ticket->documents as $document) {
+                try {
+                    $this->ticketService->deleteDocument($document);
+                } catch (\Exception $e) {
+                    report($e);
+                }
+            }
+
             // Hapus relasi terkait
             $ticket->attachments()->delete();
             $ticket->ticketReplies()->delete();
             $ticket->feedbacks()->delete();
+            $ticket->documents()->delete();
 
             if ($ticket->ticketProgress) {
                 $ticket->ticketProgress->assignments()->delete();

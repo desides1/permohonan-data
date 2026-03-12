@@ -14,8 +14,9 @@ export const actionConfig = {
         needsReason: false,
     },
     markReady: {
-        title: "Tandai Data Siap",
-        message: "Apakah Anda yakin data sudah siap untuk direview?",
+        title: "Minta Review Pimpinan",
+        message:
+            "Apakah Anda yakin data sudah lengkap dan siap diajukan untuk review oleh Pimpinan PPKH?",
         color: "green",
         needsReason: false,
     },
