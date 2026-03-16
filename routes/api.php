@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\TicketApiController;
 use App\Http\Controllers\Api\TicketWorkflowApiController;
 use App\Http\Controllers\Api\AssignmentNotificationApiController;
+use App\Http\Controllers\Api\NotificationApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum'])->prefix('v1')->name('api.v1.')->group(function () {
@@ -27,11 +28,21 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->name('api.v1.')->group(functi
         Route::post('/reject', [TicketWorkflowApiController::class, 'reject'])->name('reject');
     });
 
+    // ─── Assignment Notifications ─────────────────────
     Route::prefix('assignments')->group(function () {
         Route::get('/', [AssignmentNotificationApiController::class, 'myAssignments'])->name('assignments.my');
         Route::get('/unread-count', [AssignmentNotificationApiController::class, 'unreadAssignmentCount'])->name('assignments.unreadCount');
         Route::get('/by-role', [AssignmentNotificationApiController::class, 'assignmentsByRole'])->name('assignments.byRole');
         Route::patch('/{assignment}/mark-read', [AssignmentNotificationApiController::class, 'markAsRead'])->name('assignments.markRead');
         Route::patch('/mark-all-read', [AssignmentNotificationApiController::class, 'markAllAsRead'])->name('assignments.markAllRead');
+    });
+
+    // ─── N8N Notification API (API Key Auth) ────────────
+    Route::middleware(['auth:sanctum'])->prefix('v1/notifications')->name('api.v1.notifications.')->group(function () {
+        Route::get('/pending', [NotificationApiController::class, 'pending'])->name('pending');
+        Route::patch('/{notification}/mark-sent', [NotificationApiController::class, 'markSent'])->name('markSent');
+        Route::patch('/{notification}/mark-failed', [NotificationApiController::class, 'markFailed'])->name('markFailed');
+        Route::patch('/mark-sent-batch', [NotificationApiController::class, 'markSentBatch'])->name('markSentBatch');
+        Route::get('/stats', [NotificationApiController::class, 'stats'])->name('stats');
     });
 });

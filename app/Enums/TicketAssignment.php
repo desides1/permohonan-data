@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+
 enum TicketAssignment: string
 {
     case ADMIN_TU = 'admin_tu';
@@ -30,14 +31,17 @@ enum TicketAssignment: string
     public static function nextAssignmentForStatus(TicketStatus $status): ?self
     {
         return match ($status) {
+            TicketStatus::SENT               => self::ADMIN_TU,
             TicketStatus::VERIFIED           => self::PIMPINAN_BPKH,
             TicketStatus::APPROVED           => self::PIMPINAN_PPKH,
-            TicketStatus::UNDER_REVIEW_PPKH  => self::PIMPINAN_BPKH,
-            TicketStatus::UNDER_REVIEW_BPKH  => self::ADMIN_TU,
+            TicketStatus::ASSIGNED           => self::SEKSI,
             TicketStatus::READY              => self::PIMPINAN_PPKH,
+            TicketStatus::UNDER_REVIEW_PPKH  => self::PIMPINAN_BPKH,
+            TicketStatus::UNDER_REVIEW_BPKH  => self::PIMPINAN_BPKH,
             TicketStatus::REVISION           => self::SEKSI,
             TicketStatus::FINAL_APPROVED     => self::ADMIN_TU,
-            default                          => null,
+            TicketStatus::REJECTED           => null,
+            TicketStatus::COMPLETED          => null,
         };
     }
 }

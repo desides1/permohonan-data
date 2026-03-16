@@ -5,6 +5,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\TicketWorkflowController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\RequestController;
+use App\Http\Controllers\DataRequestResultController;
+use Spatie\Permission\Middleware\RoleMiddleware;
 
 // ─── Landing Page ───────────────────────────────────
 Route::get('/', fn() => Inertia::render('LandingPage/Home'));
@@ -73,6 +75,26 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::post('/confirm-disposition', [TicketController::class, 'confirmDisposition'])->name('confirmDisposition');
         });
     });
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+    RoleMiddleware::using('pemohon'),
+])
+    ->prefix('pemohon')
+    ->name('pemohon.')
+    ->group(function () {
+        Route::get('/hasil-permohonan', [DataRequestResultController::class, 'index'])->name('data-request-result.index');
+
+        // Route spesifik SEBELUM route dengan {id}
+        Route::get('/hasil-permohonan/download-dokumen/{id}', [DataRequestResultController::class, 'downloadDocument'])->name('data-request-result.download-document');
+        Route::get('/hasil-permohonan/download-hasil/{ticketId}', [DataRequestResultController::class, 'downloadResult'])->name('data-request-result.download-result');
+
+        // Route dinamis paling akhir
+        Route::get('/hasil-permohonan/{id}', [DataRequestResultController::class, 'show'])->name('data-request-result.show');
+    });
+
 
 
 

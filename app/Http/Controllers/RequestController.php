@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SubmitRequest;
 use App\Models\TicketDetail;
+use App\Services\PemohonAutoRegisterService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\RequestSubmissionService;
@@ -11,6 +12,11 @@ use Illuminate\Validation\ValidationException;
 
 class RequestController extends Controller
 {
+
+    public function __construct(
+        private PemohonAutoRegisterService $autoRegister
+    ) {}
+
     public function showRequest()
     {
         return Inertia::render('LandingPage/Form');

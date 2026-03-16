@@ -19,11 +19,11 @@ class TicketReply extends Model
 
     public function ticket()
     {
-        return $this->belongsTo(TicketDetail::class);
+        return $this->belongsTo(TicketDetail::class, 'ticket_detail_id', 'id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'replied_by', 'id');
     }
 }

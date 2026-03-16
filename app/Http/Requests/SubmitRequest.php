@@ -36,6 +36,7 @@ class SubmitRequest extends FormRequest
             'details_data' => 'nullable|string|max:1000',
             'surat_permohonan' => 'required|file|mimes:pdf|max:2048',
             'lampiran.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5048',
+
         ];
     }
 }

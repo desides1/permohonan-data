@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\TicketStatus;
 use App\Models\Assignment;
 use App\Enums\TicketAssignment;
+use App\Services\TicketNotificationService;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -29,7 +30,6 @@ class TicketProgress extends Model
         'status'             => TicketStatus::class,
         'current_assignment' => TicketAssignment::class,
         'is_read'            => 'boolean',
-
     ];
 
     protected $appends = ['status_label', 'current_assignment_label'];
@@ -38,11 +38,11 @@ class TicketProgress extends Model
     {
         return $this->status?->label();
     }
+
     public function getCurrentAssignmentLabelAttribute(): ?string
     {
         return $this->current_assignment?->label();
     }
-
 
     public function ticketDetails(): BelongsTo
     {
@@ -71,10 +71,22 @@ class TicketProgress extends Model
             abort(422, "Transisi dari {$this->status->label()} ke {$target->label()} tidak diizinkan.");
         }
 
+        $fromStatus = $this->status;
+
         $this->update([
             'status'             => $target,
             'notes'              => $notes,
             'current_assignment' => TicketAssignment::nextAssignmentForStatus($target),
         ]);
+
+        $ticketDetail = $this->ticketDetails;
+        if ($ticketDetail) {
+            app(TicketNotificationService::class)->onStatusChanged(
+                $ticketDetail,
+                $fromStatus,
+                $target,
+                $notes
+            );
+        }
     }
 }

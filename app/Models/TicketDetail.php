@@ -13,6 +13,7 @@ use App\Models\Feedback;
 class TicketDetail extends Model
 {
     protected $fillable = [
+        'user_id',
         'ticket_code',
         'name',
         'email',
@@ -41,6 +42,11 @@ class TicketDetail extends Model
         return 'ticket_code';
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function ticketProgress()
     {
         return $this->hasOne(TicketProgress::class, 'ticket_details_id', 'id');
@@ -64,5 +70,10 @@ class TicketDetail extends Model
     public function documents()
     {
         return $this->hasMany(DocumentDrive::class, 'ticket_detail_id', 'id');
+    }
+
+    public function notificationLogs()
+    {
+        return $this->hasMany(NotificationLog::class, 'ticket_detail_id', 'id');
     }
 }
