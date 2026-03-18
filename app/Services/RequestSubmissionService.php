@@ -9,13 +9,15 @@ use App\Models\TicketProgress;
 use App\Services\AttachmentUploader;
 use App\Services\ProgressRecorder;
 use App\Services\PemohonAutoRegisterService;
+use App\Services\TicketNotificationService;
 use App\Models\NotificationLog;
 use App\Models\User;
 
 class RequestSubmissionService
 {
     public function __construct(
-        private PemohonAutoRegisterService $autoRegister
+        private PemohonAutoRegisterService $autoRegister,
+        private TicketNotificationService $notificationService,
     ) {}
 
     public function submit(array $data): TicketDetail
@@ -40,6 +42,9 @@ class RequestSubmissionService
                 'sent',
                 'admin_tu'
             );
+
+            // 5. Trigger notifikasi + webhook ke n8n (real-time)
+            $this->notificationService->onTicketSubmitted($detail, $user, $plainPassword);
 
             NotificationLog::create([
                 'type'              => 'ticket_submitted',

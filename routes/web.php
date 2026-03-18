@@ -6,7 +6,6 @@ use App\Http\Controllers\TicketWorkflowController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\DataRequestResultController;
-use Spatie\Permission\Middleware\RoleMiddleware;
 
 // ─── Landing Page ───────────────────────────────────
 Route::get('/', fn() => Inertia::render('LandingPage/Home'));
@@ -80,7 +79,7 @@ Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
-    RoleMiddleware::using('pemohon'),
+    'role:pemohon',
 ])
     ->prefix('pemohon')
     ->name('pemohon.')

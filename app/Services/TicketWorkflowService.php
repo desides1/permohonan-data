@@ -12,6 +12,8 @@ class TicketWorkflowService
 {
     public function __construct(
         private readonly TicketActivityLogger $logger,
+        private readonly TicketNotificationService $notificationService,
+
     ) {}
 
     /**
@@ -53,27 +55,35 @@ class TicketWorkflowService
     /**
      * Pimpinan PPKH disposisi ke Seksi → ASSIGNED.
      */
-    public function assignToSeksi(TicketProgress $ticket, User $performer, User $petugasSeksi, ?string $notes = null): void
+    public function assignToSeksi(TicketProgress $ticket, User $user, User $petugasSeksi, ?string $notes = null): void
     {
-        DB::transaction(function () use ($ticket, $performer, $petugasSeksi, $notes) {
-            $SeksiName = $petugasSeksi->seksi ? $petugasSeksi->seksi->name : 'Seksi';
+        DB::transaction(function () use ($ticket, $user, $petugasSeksi, $notes) {
+            $seksiName = $petugasSeksi->seksi ? $petugasSeksi->seksi->name : 'Seksi';
 
             $ticket->transitionTo(TicketStatus::ASSIGNED, $notes ?? 'Ditugaskan ke Seksi.');
 
             $ticket->assignments()->create([
-                'assignment'  => TicketAssignment::SEKSI,
+                'assignment'          => TicketAssignment::SEKSI,
                 'assigned_to_user_id' => $petugasSeksi->id,
-                'assigned_by' => $performer->id,
-                'seksi_id'   => $petugasSeksi->seksi_id,
-                'notes'       => $notes ?? 'Disposisi ke Seksi untuk penyiapan data.',
+                'assigned_by'         => $user->id,
+                'seksi_id'            => $petugasSeksi->seksi_id,
+                'notes'               => $notes ?? 'Disposisi ke Seksi untuk penyiapan data.',
             ]);
 
-            $this->logger->log($ticket, 'assign', "Tiket #{$ticket->ticketDetails->ticket_code} ditugaskan ke {$petugasSeksi->name} ({$SeksiName}) oleh {$performer->name}.", [
-                'assigned_to' => TicketAssignment::SEKSI->label(),
-                'assigned_to_user_id' => $petugasSeksi->id,
+            // Kirim notifikasi langsung ke petugas seksi yang ditunjuk
+            $this->notificationService->onAssignedToSpecificUser(
+                ticket: $ticket->ticketDetails,
+                assignedUser: $petugasSeksi,
+                assignedBy: $user,
+                notes: $notes,
+            );
+
+            $this->logger->log($ticket, 'assign', "Tiket #{$ticket->ticketDetails->ticket_code} ditugaskan ke {$petugasSeksi->name} ({$seksiName}) oleh {$user->name}.", [
+                'assigned_to'           => TicketAssignment::SEKSI->label(),
+                'assigned_to_user_id'   => $petugasSeksi->id,
                 'assigned_to_user_name' => $petugasSeksi->name,
-                'seksi_id' => $petugasSeksi->seksi_id,
-                'seksi_name' => $SeksiName,
+                'seksi_id'              => $petugasSeksi->seksi_id,
+                'seksi_name'            => $seksiName,
             ]);
         });
     }
@@ -99,64 +109,48 @@ class TicketWorkflowService
     /**
      * Pimpinan PPKH mulai review → UNDER_REVIEW_PPKH.
      */
-    public function reviewByPpkh(TicketProgress $ticket, User $user): void
+    public function reviewByPpkh(TicketProgress $ticket, User $performer): void
     {
-        DB::transaction(function () use ($ticket, $user) {
-            $fromStatus = $ticket->status;
-            $ticket->update(['status' => TicketStatus::UNDER_REVIEW_PPKH]);
+        DB::transaction(function () use ($ticket, $performer) {
+            $ticket->transitionTo(TicketStatus::UNDER_REVIEW_PPKH, 'Sedang direview oleh Pimpinan PPKH.');
 
-            $this->logger->log($ticket, $user, 'review_ppkh', [
-                'action' => 'review_ppkh',
-                'from_status' => $fromStatus->value,
-                'to_status' => TicketStatus::UNDER_REVIEW_PPKH->value,
-            ]);
+            $this->logger->log($ticket, 'review_ppkh', "Tiket #{$ticket->ticketDetails->ticket_code} sedang direview oleh {$performer->name} (PPKH).");
         });
     }
 
     /**
      * Pimpinan PPKH meneruskan ke BPKH → UNDER_REVIEW_BPKH.
      */
-    public function forwardToBpkh(TicketProgress $ticket, User $user): void
+    public function forwardToBpkh(TicketProgress $ticket, User $performer): void
     {
-        DB::transaction(function () use ($ticket, $user) {
-            $fromStatus = $ticket->status;
-            $ticket->update([
-                'status' => TicketStatus::UNDER_REVIEW_BPKH,
-            ]);
-            // $ticket->assignments()->create([
-            //     'assignment'  => TicketAssignment::PIMPINAN_BPKH,
-            //     'assigned_by' => $user->id,
-            //     'notes'       => 'Data telah direview PPKH, diteruskan ke Pimpinan BPKH.',
-            // ]);
+        DB::transaction(function () use ($ticket, $performer) {
+            $ticket->transitionTo(TicketStatus::UNDER_REVIEW_BPKH, 'Diteruskan ke Pimpinan BPKH untuk review.');
 
-
-            $this->logger->log($ticket, $user, 'forward_to_bpkh', [
-                'action' => 'forward_to_bpkh',
-                'from_status' => $fromStatus->value,
-                'to_status' => TicketStatus::UNDER_REVIEW_BPKH->value,
+            $ticket->assignments()->create([
+                'assignment'  => TicketAssignment::PIMPINAN_BPKH,
+                'assigned_by' => $performer->id,
+                'notes'       => 'Data telah direview PPKH, diteruskan ke Pimpinan BPKH.',
             ]);
+
+            $this->logger->log($ticket, 'forward_to_bpkh', "Tiket #{$ticket->ticketDetails->ticket_code} diteruskan ke BPKH oleh {$performer->name}.");
         });
     }
 
     /**
      * Pimpinan PPKH/BPKH minta revisi → REVISION, dikembalikan ke Seksi.
      */
-    public function requestRevision(TicketProgress $ticket, User $user, string $reason): void
+    public function requestRevision(TicketProgress $ticket, User $performer, string $reason): void
     {
-        DB::transaction(function () use ($ticket, $user, $reason) {
-            $fromStatus = $ticket->status;
-            $ticket->update(['status' => TicketStatus::REVISION]);
+        DB::transaction(function () use ($ticket, $performer, $reason) {
+            $ticket->transitionTo(TicketStatus::REVISION, "Diminta revisi: {$reason}");
 
             $ticket->assignments()->create([
                 'assignment'  => TicketAssignment::SEKSI,
-                'assigned_by' => $user->id,
+                'assigned_by' => $performer->id,
                 'notes'       => "Diminta revisi: {$reason}",
             ]);
 
-            $this->logger->log($ticket, $user, 'request_revision', [
-                'action' => 'request_revision',
-                'from_status' => $fromStatus->value,
-                'to_status' => TicketStatus::REVISION->value,
+            $this->logger->log($ticket, 'request_revision', "Tiket #{$ticket->ticketDetails->ticket_code} diminta revisi oleh {$performer->name}.", [
                 'reason' => $reason,
             ]);
         });
@@ -165,40 +159,30 @@ class TicketWorkflowService
     /**
      * Pimpinan BPKH final approve → FINAL_APPROVED.
      */
-    public function finalApprove(TicketProgress $ticket, User $user): void
+    public function finalApprove(TicketProgress $ticket, User $performer): void
     {
-        DB::transaction(function () use ($ticket, $user) {
-            $fromStatus = $ticket->status;
-            $ticket->update(['status' => TicketStatus::FINAL_APPROVED]);
+        DB::transaction(function () use ($ticket, $performer) {
+            $ticket->transitionTo(TicketStatus::FINAL_APPROVED, 'Disetujui final oleh Pimpinan BPKH.');
 
             $ticket->assignments()->create([
                 'assignment'  => TicketAssignment::ADMIN_TU,
-                'assigned_by' => $user->id,
+                'assigned_by' => $performer->id,
                 'notes'       => 'Disetujui final, dikembalikan ke Admin TU untuk penyerahan.',
             ]);
 
-            $this->logger->log($ticket, $user, 'final_approve', [
-                'action' => 'final_approve',
-                'from_status' => $fromStatus->value,
-                'to_status' => TicketStatus::FINAL_APPROVED->value,
-            ]);
+            $this->logger->log($ticket, 'final_approve', "Tiket #{$ticket->ticketDetails->ticket_code} disetujui final oleh {$performer->name}.");
         });
     }
 
     /**
      * Admin TU menyelesaikan → COMPLETED.
      */
-    public function finalize(TicketProgress $ticket, User $user): void
+    public function finalize(TicketProgress $ticket, User $performer): void
     {
-        DB::transaction(function () use ($ticket, $user) {
-            $fromStatus = $ticket->status;
-            $ticket->update(['status' => TicketStatus::COMPLETED]);
+        DB::transaction(function () use ($ticket, $performer) {
+            $ticket->transitionTo(TicketStatus::COMPLETED, 'Permohonan diselesaikan.');
 
-            $this->logger->log($ticket, $user, 'finalize', [
-                'action' => 'finalize',
-                'from_status' => $fromStatus->value,
-                'to_status' => TicketStatus::COMPLETED->value,
-            ]);
+            $this->logger->log($ticket, 'finalize', "Tiket #{$ticket->ticketDetails->ticket_code} diselesaikan oleh {$performer->name}.");
         });
     }
 
