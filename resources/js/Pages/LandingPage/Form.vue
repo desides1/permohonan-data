@@ -356,7 +356,7 @@ watch(
                         <div class="flex w-full">
                             <Input
                                 :value="item.fileName"
-                                class="rounded-r-none cursor-pointer focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                                class="rounded-r-none cursor-pointer focus:border-green-400 focus:ring-2 focus:ring-green-400"
                                 placeholder="Unggah dokumen anda"
                                 readonly
                                 @click="triggerLampiranUpload(index)"
@@ -393,7 +393,7 @@ watch(
                 </div>
                 <div class="md:col-span-2 mt-10">
                     <Button
-                        class="hover:bg-primary-dark px-24"
+                        class="text-white hover:bg-primary-dark px-24"
                         type="submit"
                         :disabled="isSubmitting"
                     >

@@ -1,7 +1,6 @@
 <script setup>
-import { inject } from "vue";
-// import { Link } from "@inertiajs/vue3";
-import { Link } from "@inertiajs/vue3";
+import { inject, computed } from "vue";
+import { Link, usePage } from "@inertiajs/vue3";
 
 import {
     House,
@@ -13,6 +12,7 @@ import {
 } from "lucide-vue-next";
 import { sidebarMenu } from "./SidebarMenu.js";
 const closeSidebar = inject("closeSidebar", null);
+
 const icons = {
     House,
     FileText,
@@ -21,6 +21,24 @@ const icons = {
     DatabaseBackup,
     LogOut,
 };
+
+const page = usePage();
+
+const userRoles = computed(() => {
+    const user = page.props.auth?.user;
+    // Mendukung Spatie: roles bisa berupa array of objects atau array of strings
+    return (user?.roles ?? []).map((r) => (typeof r === "string" ? r : r.name));
+});
+
+const filteredMenu = computed(() =>
+    sidebarMenu.filter((item) => {
+        // Jika menu tidak punya batasan roles, tampilkan untuk semua
+        if (!item.roles || item.roles.length === 0) return true;
+
+        // Tampilkan hanya jika user punya salah satu role yang diizinkan
+        return item.roles.some((role) => userRoles.value.includes(role));
+    }),
+);
 </script>
 
 <template>
@@ -30,7 +48,7 @@ const icons = {
         <div class="text-base font-semibold mb-5 tracking-wide">BPKH Admin</div>
 
         <nav class="flex-1 flex flex-col gap-1.5">
-            <template v-for="item in sidebarMenu" :key="item.label">
+            <template v-for="item in filteredMenu" :key="item.label">
                 <!-- MENU DENGAN SUBMENU -->
                 <details v-if="item.children" class="group">
                     <summary class="dropdown-trigger">

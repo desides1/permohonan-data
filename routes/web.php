@@ -6,6 +6,7 @@ use App\Http\Controllers\TicketWorkflowController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\DataRequestResultController;
+use App\Http\Controllers\BackupController;
 
 // ─── Landing Page ───────────────────────────────────
 Route::get('/', fn() => Inertia::render('LandingPage/Home'));
@@ -72,6 +73,13 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::post('/reject', [TicketWorkflowController::class, 'reject'])->name('reject');
 
             Route::post('/confirm-disposition', [TicketController::class, 'confirmDisposition'])->name('confirmDisposition');
+        });
+
+        Route::prefix('backup')->name('backup.')->middleware('role:admin_tu')->group(function () {
+            Route::get('/', [BackupController::class, 'index'])->name('index');
+            Route::post('/', [BackupController::class, 'store'])->name('store');
+            Route::put('/schedule', [BackupController::class, 'updateSchedule'])->name('schedule.update');
+            Route::post('/cleanup', [BackupController::class, 'cleanup'])->name('cleanup');
         });
     });
 

@@ -6,18 +6,53 @@ import CardHeader from "@/Components/ui/card/CardHeader.vue";
 import CardTitle from "@/Components/ui/card/CardTitle.vue";
 import CardDescription from "@/Components/ui/card/CardDescription.vue";
 import CardContent from "@/Components/ui/card/CardContent.vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+
+// header animation images
+
+const images = [
+    "/images/hutanmaluku.webp",
+    "/images/requestdataofpeople.webp",
+    "/images/searchforest.webp",
+];
+
+const currentImage = ref(images[0]);
+const isFading = ref(false);
+
+let index = 0;
+let intervalId = null;
+
+onMounted(() => {
+    intervalId = setInterval(() => {
+        isFading.value = true;
+
+        setTimeout(() => {
+            index = (index + 1) % images.length;
+            currentImage.value = images[index];
+            isFading.value = false;
+        }, 1000);
+    }, 6000);
+});
+
+onBeforeUnmount(() => {
+    if (intervalId) clearInterval(intervalId);
+});
 </script>
 
 <template>
     <MainLayout>
         <!-- HERO -->
-        <section class="relative w-full h-[480px]">
+        <section class="relative w-full h-[620px] bg-top bg-cover">
             <img
-                src="/images/pulauPulauKecil.jpg"
-                class="w-full h-full object-cover"
+                ref="heroImage"
+                :src="currentImage"
+                class="absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-1000"
+                :class="{ 'opacity-0': isFading }"
             />
-
-            <div class="absolute inset-0 bg-black/40" />
+            <!-- <div class="absolute inset-0 bg-black/40" /> -->
+            <div
+                class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"
+            ></div>
 
             <div
                 class="absolute left-10 top-1/2 px-24 transform -translate-y-1/2 text-white animate-in slide-in-from-bottom-4 duration-700"
@@ -172,3 +207,17 @@ import CardContent from "@/Components/ui/card/CardContent.vue";
         </section>
     </MainLayout>
 </template>
+
+<style>
+@keyframes kenburns {
+    0% {
+        transform: scale(1) translateY(0);
+    }
+    100% {
+        transform: scale(1.12) translateY(-30px);
+    }
+}
+.animate-kenburns {
+    animation: kenburns 10s ease-in-out infinite alternate;
+}
+</style>

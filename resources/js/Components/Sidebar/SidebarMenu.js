@@ -32,7 +32,8 @@ export const sidebarMenu = [
     {
         label: "Pencadangan",
         icon: "DatabaseBackup",
-        href: "#",
+        route: "admin.backup.index",
+        roles: ["admin_tu"],
     },
     {
         label: "Keluar",

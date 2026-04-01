@@ -39,7 +39,15 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                // 'user' => $request->user()
+                //     ? $request->user()->load('roles:id,name')->only('id', 'name', 'email', 'roles')
+                //     : null,
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'roles' => $request->user()->getRoleNames(), // ← Spatie: returns Collection of role names
+                ] : null,
             ],
             'flash' => [
                 'ticket_code' => fn() => $request->session()->get('ticket_code'),
