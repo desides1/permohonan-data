@@ -15,7 +15,7 @@ import {
 } from "@/Components/ui/select/index.js";
 import { Textarea } from "@/Components/ui/textarea/index.js";
 import { Button } from "@/Components/ui/button/index.js";
-import { CirclePlus } from "lucide-vue-next";
+import { CirclePlus, LoaderCircle } from "lucide-vue-next";
 import { ref, computed, watch, reactive } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import InputError from "@/Components/InputError.vue";
@@ -50,9 +50,27 @@ const lampiran = ref([]);
 const fileInput = ref(null);
 const lampiranFile = ref([]);
 
+const startLoadingTimer = () => {
+    loadingSeconds.value = 0;
+    loadingInterval = setInterval(() => {
+        loadingSeconds.value++;
+    }, 1000);
+};
+
+const stopLoadingTimer = () => {
+    if (loadingInterval) {
+        clearInterval(loadingInterval);
+        loadingInterval = null;
+    }
+    loadingSeconds.value = 0;
+};
+
 const submit = () => {
+    if (isSubmitting.value) return;
+
     isSubmitting.value = true;
-    // Prepare FormData if file upload is needed
+    startLoadingTimer();
+
     const data = new FormData();
     Object.entries(form).forEach(([key, value]) => {
         if (key === "lampiran") {
@@ -71,6 +89,7 @@ const submit = () => {
         forceFormData: true,
         onFinish: () => {
             isSubmitting.value = false;
+            stopLoadingTimer();
         },
         onSuccess: () => {
             showSuccessModal.value = true;
@@ -115,6 +134,7 @@ watch(
     (val) => {
         if (val) {
             showSuccessModal.value = true;
+            stopLoadingTimer();
         }
     },
 );
@@ -124,14 +144,18 @@ watch(
     <MainLayout>
         <!-- Hero Section -->
         <section
-            class="relative h-[360px] bg-cover bg-center"
+            class="relative h-[260px] bg-cover bg-center sm:h-[320px] lg:h-[360px]"
             style="
-                background-image: url(&quot;/images/pulauPulauKecil.jpg&quot;);
+                background-image: url(&quot;/images/requestdataofpeople.webp&quot;);
             "
         >
             <div class="absolute inset-0 bg-black/40"></div>
-            <div class="relative z-10 max-w-7xl mx-auto px-6 py-24 text-white">
-                <h1 class="text-4xl font-bold mb-4">Pengajuan Formulir</h1>
+            <div
+                class="relative z-10 mx-auto max-w-7xl px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-6 lg:py-24"
+            >
+                <h1 class="mb-4 text-3xl font-bold sm:text-4xl">
+                    Pengajuan Formulir
+                </h1>
                 <p class="max-w-xl text-sm">
                     Menyediakan layanan permintaan data agar masyarakat dapat
                     mengakses informasi secara terbuka, tepat waktu, dan sesuai
@@ -140,14 +164,14 @@ watch(
             </div>
         </section>
 
-        <section class="max-w-7xl mx-auto px-6 py-16">
-            <h2 class="text-2xl font-bold mb-10">
+        <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+            <h2 class="mb-10 text-2xl font-bold">
                 Permohonan Data Informasi Publik
             </h2>
 
             <form
                 @submit.prevent="submit"
-                class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"
+                class="grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2 lg:gap-x-8"
                 method="POST"
             >
                 <div>
@@ -309,7 +333,7 @@ watch(
                 </div>
                 <div class="md:col-span-2">
                     <Label>Surat Permohonan</Label>
-                    <div class="flex gap-2">
+                    <div class="flex flex-col gap-2 sm:flex-row">
                         <input
                             ref="fileInput"
                             type="file"
@@ -320,7 +344,7 @@ watch(
                         <div class="flex w-full">
                             <Input
                                 :value="fileName"
-                                class="rounded-r-none cursor-pointer focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                                class="cursor-pointer rounded-r-none focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                                 placeholder="Unggah dokumen anda"
                                 readonly
                                 @click="triggerFileUpload"
@@ -345,7 +369,7 @@ watch(
                         Lampiran {{ index + 1 }}
                     </Label>
 
-                    <div class="flex gap-2 mt-1">
+                    <div class="mt-1 flex flex-col gap-2">
                         <input
                             ref="lampiranFile"
                             type="file"
@@ -353,31 +377,35 @@ watch(
                             :id="'lampiran-' + item.id"
                             @change="handleLampiranFileChange($event, index)"
                         />
-                        <div class="flex w-full">
-                            <Input
-                                :value="item.fileName"
-                                class="rounded-r-none cursor-pointer focus:border-green-400 focus:ring-2 focus:ring-green-400"
-                                placeholder="Unggah dokumen anda"
-                                readonly
-                                @click="triggerLampiranUpload(index)"
-                            />
-                            <InputError :message="page.props.errors.lampiran" />
-                            <Button
-                                type="button"
-                                class="rounded-l-none bg-lime-300 hover:bg-lime-400"
-                                @click="triggerLampiranUpload(index)"
-                            >
-                                Unggah
-                            </Button>
+                        <div
+                            class="flex w-full flex-col gap-2 sm:flex-row sm:items-start"
+                        >
+                            <div class="flex w-full">
+                                <Input
+                                    :value="item.fileName"
+                                    class="cursor-pointer rounded-r-none focus:border-green-400 focus:ring-2 focus:ring-green-400"
+                                    placeholder="Unggah dokumen anda"
+                                    readonly
+                                    @click="triggerLampiranUpload(index)"
+                                />
+                                <Button
+                                    type="button"
+                                    class="rounded-l-none bg-lime-300 hover:bg-lime-400"
+                                    @click="triggerLampiranUpload(index)"
+                                >
+                                    Unggah
+                                </Button>
+                            </div>
                             <Button
                                 type="button"
                                 variant="outline"
-                                class="ml-2 border-red-400 text-red-500"
+                                class="border-red-400 text-red-500 sm:ml-0"
                                 @click="removeLampiran(index)"
                             >
                                 Hapus
                             </Button>
                         </div>
+                        <InputError :message="page.props.errors.lampiran" />
                     </div>
                 </div>
                 <div class="flex justify-center md:col-span-2 mt-4">
@@ -385,63 +413,76 @@ watch(
                         type="button"
                         size="icon"
                         variant="outline"
-                        class="w-10 rounded-full iconPlus bg-lime-200 hover:bg-lime-300"
+                        class="iconPlus w-10 rounded-full bg-lime-200 hover:bg-lime-300"
                         @click="addInputField"
+                        :disabled="isSubmitting"
                     >
                         <CirclePlus />
                     </Button>
                 </div>
                 <div class="md:col-span-2 mt-10">
                     <Button
-                        class="text-white hover:bg-primary-dark px-24"
+                        class="w-full px-24 text-white hover:bg-primary-dark sm:w-auto"
                         type="submit"
                         :disabled="isSubmitting"
                     >
-                        Kirim
+                        <span class="inline-flex items-center gap-2">
+                            <LoaderCircle
+                                v-if="isSubmitting"
+                                class="animate-spin"
+                            />
+                            {{ isSubmitting ? "Sedang Mengirim..." : "Kirim" }}
+                        </span>
                     </Button>
                 </div>
             </form>
         </section>
     </MainLayout>
 
-    <!-- Loading Dialog -->
     <Dialog :open="isSubmitting">
         <DialogOverlay class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
         <DialogContent
-            class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-xl bg-white p-6 pointer-events-none"
+            class="fixed left-1/2 top-1/2 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 pointer-events-none"
         >
             <h3 class="text-lg font-semibold">Permintaan Data</h3>
-            <img
-                src="/images/prosesicon.svg"
-                class="mx-auto my-6 h-40"
-                alt="loading"
-            />
+            <div class="my-6 flex flex-col items-center justify-center gap-4">
+                <LoaderCircle class="h-12 w-12 animate-spin text-primary" />
+                <img
+                    src="/images/prosesicon.svg"
+                    class="mx-auto my-6 h-32 sm:h-40"
+                    alt="loading"
+                />
+            </div>
             <p class="text-center text-sm text-muted-foreground">
                 Sedang Mengirim Data ...
+            </p>
+            <p class="mt-2 text-center text-xs text-muted-foreground">
+                Mohon tunggu proses berjalan dalam {{ loadingSeconds }} detik
+                hingga proses selesai <br />
+                jangan tutup halaman ini
             </p>
         </DialogContent>
     </Dialog>
 
-    <!-- Success Dialog -->
     <Dialog v-model:open="showSuccessModal">
         <DialogOverlay class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
         <DialogContent
-            class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-xl bg-white p-6"
+            class="fixed left-1/2 top-1/2 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6"
         >
             <h3 class="text-lg font-semibold">Permintaan Data</h3>
             <img
-                src="/images/success_prosses.svg"
-                class="mx-auto my-6 h-40"
+                src="/images/succes_prosses.svg"
+                class="mx-auto my-6 h-32 sm:h-40"
                 alt="success"
             />
             <p class="text-center">
                 Permintaan data anda berhasil dikirimkan, berikut kode tracking
                 formulir anda
             </p>
-            <p class="text-center text-2xl font-bold mt-4">
+            <p class="mt-4 text-center text-2xl font-bold">
                 {{ trackingCode }}
             </p>
-            <p class="text-xs text-muted-foreground text-center mt-3">
+            <p class="mt-3 text-center text-xs text-muted-foreground">
                 Periksa email anda atau hubungi no. 000000000
             </p>
             <Button class="mt-6 w-full" @click="showSuccessModal = false">

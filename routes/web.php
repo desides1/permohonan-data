@@ -15,6 +15,8 @@ Route::post('/mengirim', [RequestController::class, 'postRequest'])->name('landi
 Route::get('/lacak', fn() => Inertia::render('LandingPage/TrackRequest'));
 Route::post('/track-ticket', [RequestController::class, 'trackTicket'])->name('ticket.track');
 Route::get('/bantuan', fn() => Inertia::render('LandingPage/FAQ'));
+Route::get('/feedback', [RequestController::class, 'showFeedbackForm'])->name('feedback.form');
+Route::post('/feedback', [RequestController::class, 'submitFeedback'])->name('feedback.submit');
 
 // ─── Admin (Authenticated) ──────────────────────────
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])

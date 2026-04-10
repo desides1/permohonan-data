@@ -43,6 +43,6 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->name('api.v1.')->group(functi
         Route::patch('/{notification}/mark-sent', [NotificationApiController::class, 'markSent'])->name('markSent');
         Route::patch('/{notification}/mark-failed', [NotificationApiController::class, 'markFailed'])->name('markFailed');
         Route::patch('/mark-sent-batch', [NotificationApiController::class, 'markSentBatch'])->name('markSentBatch');
-        Route::get('/stats', [NotificationApiController::class, 'stats'])->name('stats');
+        Route::get('/status', [NotificationApiController::class, 'stats'])->name('stats');
     });
 });

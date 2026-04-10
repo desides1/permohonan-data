@@ -62,8 +62,9 @@ class TicketNotificationService
                 'status'         => 'sent',
                 'status_label'   => 'Dikirim',
                 'login_url'      => url('/login'),
-                'track_url'      => url('/lacak'),
-                'message'        => "Permohonan {$ticket->ticket_code} berhasil dikirim. Menunggu verifikasi.",
+                'dashboard_url'  => url('/pemohon/hasil-permohonan'),
+                'track_url'      => url('/pemohon/hasil-permohonan'),
+                'message'        => "Permohonan {$ticket->ticket_code} berhasil dikirim. Silakan login ke dashboard pemohon untuk memantau proses permohonan Anda.",
             ],
         ]);
 

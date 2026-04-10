@@ -33,13 +33,17 @@ const toggleFaq = (index) => {
     <MainLayout>
         <!-- Hero -->
         <section
-            class="relative h-[360px] bg-cover bg-center"
-            style="background-image: url('/images/pulauPulauKecil.jpg')"
+            class="relative h-[260px] bg-cover bg-center sm:h-[320px] lg:h-[360px]"
+            style="background-image: url(&quot;/images/hutanmaluku.webp&quot;)"
         >
             <div class="absolute inset-0 bg-black/40"></div>
 
-            <div class="relative z-10 max-w-7xl mx-auto px-6 py-24 text-white">
-                <h1 class="text-4xl font-bold mb-4">FAQ - Pertanyaan Umum</h1>
+            <div
+                class="relative z-10 mx-auto max-w-7xl px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-6 lg:py-24"
+            >
+                <h1 class="mb-4 text-3xl font-bold sm:text-4xl">
+                    FAQ - Pertanyaan Umum
+                </h1>
                 <p class="max-w-xl text-sm">
                     Temukan jawaban atas pertanyaan umum mengenai layanan
                     permohonan data kami.
@@ -48,25 +52,26 @@ const toggleFaq = (index) => {
         </section>
 
         <!-- FAQ -->
-        <section class="max-w-5xl mx-auto py-16 px-6">
-            <div class="text-center mb-10">
-                <h2 class="text-3xl font-bold mb-2">Pertanyaan Umum</h2>
+        <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
+            <div class="mb-10 text-center">
+                <h2 class="mb-2 text-2xl font-bold sm:text-3xl">
+                    Pertanyaan Umum
+                </h2>
                 <p class="text-sm text-gray-600">
                     Beberapa pertanyaan yang sering diajukan mengenai Layanan
                     Permintaan Data
                 </p>
             </div>
 
-            <div class="border border-gray-200">
+            <div class="overflow-hidden rounded-md border border-gray-200">
                 <div
                     v-for="(item, index) in faqs"
                     :key="index"
                     class="border-b border-gray-200 last:border-b-0"
                 >
-                    <!-- Bar pertanyaan -->
                     <button
                         type="button"
-                        class="w-full text-left px-4 py-3 text-sm flex justify-between items-center"
+                        class="flex w-full items-start justify-between px-4 py-3 text-left text-sm sm:items-center"
                         :class="
                             activeIndex === index
                                 ? 'bg-lime-50'
@@ -74,13 +79,12 @@ const toggleFaq = (index) => {
                         "
                         @click="toggleFaq(index)"
                     >
-                        <span>{{ item.question }}</span>
-                        <span class="ml-4 text-xl leading-none">
+                        <span class="pr-4">{{ item.question }}</span>
+                        <span class="ml-4 shrink-0 text-xl leading-none">
                             {{ activeIndex === index ? "−" : "+" }}
                         </span>
                     </button>
 
-                    <!-- Jawaban -->
                     <div
                         v-if="activeIndex === index"
                         class="bg-lime-100 px-4 py-3 text-sm text-gray-700"
