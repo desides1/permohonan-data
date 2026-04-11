@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Enums\TicketStatus;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Models\Seksi;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -46,8 +47,20 @@ class HandleInertiaRequests extends Middleware
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
+                    'seksi_id' => $request->user()->seksi_id,
                     'roles' => $request->user()->getRoleNames()->values()->all(), // ← Spatie: returns Collection of role names
                 ] : null,
+            ],
+            'master' => [
+                'seksiOptions' => fn() => Seksi::query()
+                    ->orderBy('id')
+                    ->get()
+                    ->map(fn($seksi) => [
+                        'id' => $seksi->id,
+                        'label' => $seksi->nama ?? $seksi->name ?? ('Seksi ' . $seksi->id),
+                    ])
+                    ->values()
+                    ->all(),
             ],
             'flash' => [
                 'ticket_code' => fn() => $request->session()->get('ticket_code'),

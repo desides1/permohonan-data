@@ -33,7 +33,7 @@ export const sidebarMenu = [
     {
         label: "Admin",
         icon: "User",
-        href: "#",
+        route: "profile.show",
     },
     {
         label: "Pencadangan",
