@@ -69,40 +69,4 @@ class RequestController extends Controller
             'ticket' => $ticket,
         ]);
     }
-
-    public function showFeedbackForm(Request $request)
-    {
-        return Inertia::render('LandingPage/FeedbackForm', [
-            'ticket_code' => $request->string('ticket_code')->toString(),
-        ]);
-    }
-
-    public function submitFeedback(Request $request)
-    {
-        $validated = $request->validate([
-            'ticket_code'             => 'required|string',
-            'service_usability'       => 'required|string|max:100',
-            'service_satisfaction'    => 'required|string|max:100',
-            'illegal_fee_indication'  => 'required|string|max:100',
-            'suggestions'             => 'nullable|string|max:1000',
-        ]);
-
-        $detail = TicketDetail::where('ticket_code', $validated['ticket_code'])->first();
-
-        if (! $detail) {
-            throw ValidationException::withMessages([
-                'ticket_code' => 'Kode tiket tidak ditemukan. Silakan periksa kembali.',
-            ]);
-        }
-
-        Feedback::create([
-            'ticket_detail_id'       => $detail->id,
-            'service_usability'      => $validated['service_usability'],
-            'service_satisfaction'   => $validated['service_satisfaction'],
-            'illegal_fee_indication' => $validated['illegal_fee_indication'],
-            'suggestions'            => $validated['suggestions'] ?? null,
-        ]);
-
-        return redirect()->back()->with('success', 'Terima kasih. Feedback Anda berhasil dikirim.');
-    }
 }

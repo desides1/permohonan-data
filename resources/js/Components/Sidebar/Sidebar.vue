@@ -9,6 +9,7 @@ import {
     User,
     DatabaseBackup,
     LogOut,
+    Smile,
 } from "lucide-vue-next";
 import { sidebarMenu } from "./SidebarMenu.js";
 const closeSidebar = inject("closeSidebar", null);
@@ -20,6 +21,7 @@ const icons = {
     User,
     DatabaseBackup,
     LogOut,
+    Smile,
 };
 
 const page = usePage();

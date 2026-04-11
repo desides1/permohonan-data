@@ -7,6 +7,7 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\DataRequestResultController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\FeedbackController;
 
 // ─── Landing Page ───────────────────────────────────
 Route::get('/', fn() => Inertia::render('LandingPage/Home'));
@@ -15,8 +16,8 @@ Route::post('/mengirim', [RequestController::class, 'postRequest'])->name('landi
 Route::get('/lacak', fn() => Inertia::render('LandingPage/TrackRequest'));
 Route::post('/track-ticket', [RequestController::class, 'trackTicket'])->name('ticket.track');
 Route::get('/bantuan', fn() => Inertia::render('LandingPage/FAQ'));
-Route::get('/feedback', [RequestController::class, 'showFeedbackForm'])->name('feedback.form');
-Route::post('/feedback', [RequestController::class, 'submitFeedback'])->name('feedback.submit');
+Route::get('/feedback', [FeedbackController::class, 'showFeedbackForm'])->name('feedback.form');
+Route::post('/feedback', [FeedbackController::class, 'submitFeedback'])->name('feedback.submit');
 
 // ─── Admin (Authenticated) ──────────────────────────
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])
@@ -77,12 +78,18 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::post('/confirm-disposition', [TicketController::class, 'confirmDisposition'])->name('confirmDisposition');
         });
 
+        // Backup
         Route::prefix('backup')->name('backup.')->middleware('role:admin_tu')->group(function () {
             Route::get('/', [BackupController::class, 'index'])->name('index');
             Route::post('/', [BackupController::class, 'store'])->name('store');
             Route::put('/schedule', [BackupController::class, 'updateSchedule'])->name('schedule.update');
             Route::post('/cleanup', [BackupController::class, 'cleanup'])->name('cleanup');
         });
+
+        // Feedback
+        Route::get('/admin/survei-kepuasan', [FeedbackController::class, 'index'])
+            ->middleware('role:admin_tu|pimpinan_bpkh')
+            ->name('feedback.index');
     });
 
 Route::middleware([

@@ -39,7 +39,7 @@ const submitFeedback = () => {
 </script>
 
 <template>
-    <Head title="Feedback Layanan" />
+    <Head title="Survei Kepuasan Masyarakat" />
 
     <div class="min-h-screen bg-slate-50">
         <section
@@ -69,7 +69,7 @@ const submitFeedback = () => {
                         <h1
                             class="text-3xl font-extrabold tracking-tight sm:text-4xl"
                         >
-                            Form Feedback Pelayanan
+                            Formulir Survei Kepuasan Masyarakat
                         </h1>
                         <p
                             class="mt-3 text-sm leading-6 text-white/85 sm:text-base"
@@ -97,7 +97,7 @@ const submitFeedback = () => {
                 >
                     <CardHeader class="space-y-2 p-5 sm:p-7">
                         <CardTitle class="text-2xl font-bold text-slate-900">
-                            Isi Feedback Anda
+                            Isi masukan dan kritik Anda
                         </CardTitle>
                         <CardDescription
                             class="text-sm leading-6 text-slate-600"
@@ -393,7 +393,7 @@ const submitFeedback = () => {
                                 {{
                                     form.processing
                                         ? "Mengirim..."
-                                        : "Kirim Feedback"
+                                        : "Kirim Masukan"
                                 }}
                             </Button>
                         </form>
@@ -416,8 +416,8 @@ const submitFeedback = () => {
                             class="space-y-3 p-5 pt-0 text-sm leading-6 text-slate-600 sm:p-6 sm:pt-0"
                         >
                             <p>
-                                Feedback digunakan untuk evaluasi peningkatan
-                                mutu layanan.
+                                Survei kepuasan pelayanan ini digunakan untuk
+                                evaluasi peningkatan mutu layanan.
                             </p>
                             <p>
                                 Masukan Anda membantu kami memperbaiki proses,
@@ -436,7 +436,7 @@ const submitFeedback = () => {
                                 Informasi
                             </div>
                             <h3 class="mt-2 text-xl font-bold">
-                                Isi feedback dengan jujur dan singkat
+                                Isi survei dengan jujur dan singkat
                             </h3>
                             <p class="mt-3 text-sm leading-6 text-white/85">
                                 Jika Anda memiliki kode tiket, cantumkan agar

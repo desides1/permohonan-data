@@ -46,7 +46,7 @@ class HandleInertiaRequests extends Middleware
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
-                    'roles' => $request->user()->getRoleNames(), // ← Spatie: returns Collection of role names
+                    'roles' => $request->user()->getRoleNames()->values()->all(), // ← Spatie: returns Collection of role names
                 ] : null,
             ],
             'flash' => [

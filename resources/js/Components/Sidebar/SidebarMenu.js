@@ -25,6 +25,12 @@ export const sidebarMenu = [
         ],
     },
     {
+        label: "Survei Kepuasan Masyarakat",
+        icon: "Smile",
+        route: "admin.feedback.index",
+        roles: ["admin_tu", "pimpinan_bpkh"],
+    },
+    {
         label: "Admin",
         icon: "User",
         href: "#",
