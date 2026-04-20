@@ -1,59 +1,161 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Manajemen Permohonan Data BPKH
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web untuk mengelola permohonan data secara end-to-end, mulai dari pengajuan oleh pemohon, verifikasi internal, disposisi ke seksi, review pimpinan, hingga penyerahan hasil kepada pemohon.
 
-## About Laravel
+Project ini dibangun dengan Laravel 12, Inertia.js, Vue 3, dan Tailwind CSS, serta dilengkapi integrasi notifikasi dan backup ke Google Drive.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Daftar Isi
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Gambaran Umum](#gambaran-umum)
+- [Fitur Utama](#fitur-utama)
+- [Alur Proses Permohonan](#alur-proses-permohonan)
+- [Role dan Hak Akses](#role-dan-hak-akses)
+- [Teknologi yang Digunakan](#teknologi-yang-digunakan)
+- [Struktur Project](#struktur-project)
+- [Persyaratan Sistem](#persyaratan-sistem)
+- [Instalasi dan Setup](#instalasi-dan-setup)
+- [Konfigurasi Environment](#konfigurasi-environment)
+- [Menjalankan Project](#menjalankan-project)
+- [Akun Seeder Default](#akun-seeder-default)
+- [Alur Penggunaan Singkat](#alur-penggunaan-singkat)
+- [API Internal](#api-internal)
+- [Testing](#testing)
+- [Backup dan Scheduler](#backup-dan-scheduler)
+- [Notifikasi dan Integrasi n8n](#notifikasi-dan-integrasi-n8n)
+- [Troubleshooting](#troubleshooting)
+- [Kontribusi](#kontribusi)
+- [Lisensi](#lisensi)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Gambaran Umum
 
-## Learning Laravel
+Sistem ini dirancang untuk mendigitalisasi proses permohonan data di lingkungan BPKH agar lebih terstruktur, terdokumentasi, dan mudah dipantau.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Fungsi utama aplikasi:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Pemohon dapat mengajukan permohonan data melalui formulir online.
+- Sistem membuat kode tiket untuk pelacakan permohonan.
+- Admin dan pimpinan memproses tiket berdasarkan workflow dan role masing-masing.
+- Petugas seksi dapat mengunggah hasil dokumen pendukung.
+- Pemohon dapat memantau status dan mengunduh hasil permohonan jika sudah selesai.
+- Sistem mencatat aktivitas, notifikasi, feedback, dan riwayat backup.
 
-## Laravel Sponsors
+## Fitur Utama
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Pengajuan permohonan data melalui landing page.
+- Pelacakan status permohonan menggunakan kode tiket.
+- Auto-register pemohon saat pengajuan pertama.
+- Dashboard admin berdasarkan role.
+- Workflow tiket bertingkat:
+  - verifikasi
+  - persetujuan
+  - disposisi
+  - review
+  - revisi
+  - finalisasi
+- Upload lampiran saat pengajuan.
+- Upload dokumen hasil oleh petugas seksi.
+- Download lampiran dan hasil permohonan.
+- Log aktivitas permohonan dan notifikasi.
+- Survei/feedback kepuasan layanan.
+- Backup manual dan terjadwal ke Google Drive.
+- Integrasi notifikasi ke email, WhatsApp, dan webhook n8n.
+- API internal berbasis Sanctum.
 
-### Premium Partners
+## Alur Proses Permohonan
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Alur utama permohonan data dalam sistem ini:
 
-## Contributing
+1. Pemohon mengisi formulir permohonan data.
+2. Sistem membuat tiket baru dengan status `sent`.
+3. Admin TU memverifikasi permohonan.
+4. Pimpinan BPKH memberikan persetujuan awal.
+5. Pimpinan PPKH mendisposisikan tiket ke petugas seksi.
+6. Petugas seksi menyiapkan data dan mengunggah dokumen hasil.
+7. Pimpinan PPKH melakukan review.
+8. Pimpinan BPKH melakukan review akhir.
+9. Jika perlu, tiket dikembalikan ke seksi untuk revisi.
+10. Jika disetujui final, Admin TU menyelesaikan permohonan.
+11. Pemohon mengunduh hasil permohonan dari dashboard.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Status Tiket
 
-## Code of Conduct
+| Status | Keterangan |
+|---|---|
+| `sent` | Permohonan baru dikirim |
+| `verified` | Diverifikasi oleh Admin TU |
+| `approved` | Disetujui Pimpinan BPKH |
+| `assigned` | Didisposisikan ke Seksi |
+| `ready` | Data telah disiapkan |
+| `under_review_ppkh` | Sedang direview Pimpinan PPKH |
+| `under_review_bpkh` | Sedang direview Pimpinan BPKH |
+| `revision` | Perlu revisi |
+| `final_approved` | Disetujui final |
+| `completed` | Permohonan selesai |
+| `rejected` | Permohonan ditolak |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Role dan Hak Akses
 
-## Security Vulnerabilities
+Sistem menggunakan role dan permission berbasis Spatie Permission.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Role | Fungsi Utama |
+|---|---|
+| `pemohon` | Mengajukan permohonan, memantau status, mengunduh hasil |
+| `admin_tu` | Verifikasi awal, finalisasi, akses backup |
+| `pimpinan_bpkh` | Persetujuan awal, review akhir, final approve, reject |
+| `pimpinan_ppkh` | Disposisi ke seksi, review PPKH, forward ke BPKH, request revisi |
+| `seksi` | Menyiapkan data, upload dokumen hasil, tandai data siap |
 
-## License
+## Teknologi yang Digunakan
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Backend
+
+- PHP 8.2+
+- Laravel 12
+- Laravel Sanctum
+- Laravel Jetstream
+- Spatie Laravel Permission
+- Spatie Laravel Activitylog
+- Spatie Laravel Backup
+- Google API Client
+- Flysystem Google Drive
+
+### Frontend
+
+- Vue 3
+- Inertia.js
+- Vite
+- Tailwind CSS
+- ApexCharts / Unovis untuk visualisasi
+- Shacdn
+- lucide icon
+
+### Database dan Infrastruktur
+
+- MySQL
+- Queue database driver
+- Session database driver
+- Scheduler Laravel
+- Storage lokal dan Google Drive
+
+## Struktur Project
+
+```text
+app/
+  Enums/                  # Enum status, assignment, metode, dsb
+  Http/Controllers/       # Controller web dan API
+  Http/Requests/          # Validasi request
+  Models/                 # Model Eloquent
+  Notifications/          # Notifikasi aplikasi
+  Policies/               # Authorization policy
+  Services/               # Business logic utama
+config/                   # Konfigurasi aplikasi
+database/
+  migrations/             # Struktur tabel
+  seeders/                # Seeder role, user, data awal
+resources/
+  js/                     # Frontend Vue + Inertia
+  views/                  # Blade view tambahan
+routes/
+  web.php                 # Web routes
+  api.php                 # API internal
+tests/                    # Test dengan Pest
