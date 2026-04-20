@@ -78,6 +78,10 @@ function resolveIcon(iconName: string): Component {
     return ICON_MAP[iconName] ?? Send;
 }
 
+const limitedRecentActivities = computed(() =>
+    (props.recentActivities ?? []).slice(0, 5),
+);
+
 /* ========================
    Chart Computed
 ======================== */
@@ -208,7 +212,7 @@ const chartOptions = computed<ApexOptions>(() => ({
 
                             <tbody>
                                 <tr
-                                    v-for="act in props.recentActivities ?? []"
+                                    v-for="act in limitedRecentActivities"
                                     :key="act.id"
                                     class="border-b last:border-b-0 hover:bg-muted/40 transition-colors"
                                 >
@@ -297,7 +301,7 @@ const chartOptions = computed<ApexOptions>(() => ({
                                     </td>
                                 </tr>
 
-                                <tr v-if="!props.recentActivities?.length">
+                                <tr v-if="!limitedRecentActivities?.length">
                                     <td
                                         colspan="4"
                                         class="px-5 py-8 text-center text-muted-foreground"
@@ -312,7 +316,7 @@ const chartOptions = computed<ApexOptions>(() => ({
                     <!-- Mobile: Card List -->
                     <div class="md:hidden divide-y">
                         <div
-                            v-for="act in props.recentActivities ?? []"
+                            v-for="act in limitedRecentActivities"
                             :key="act.id"
                             class="px-4 py-3 space-y-2 hover:bg-muted/40 transition-colors"
                         >
@@ -391,7 +395,7 @@ const chartOptions = computed<ApexOptions>(() => ({
                         </div>
 
                         <div
-                            v-if="!props.recentActivities?.length"
+                            v-if="!limitedRecentActivities?.length"
                             class="px-4 py-8 text-center text-muted-foreground text-sm"
                         >
                             Belum ada riwayat aktivitas

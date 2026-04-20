@@ -8,6 +8,7 @@ use App\Http\Controllers\RequestController;
 use App\Http\Controllers\DataRequestResultController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\ActivityLogController;
 
 // ─── Landing Page ───────────────────────────────────
 Route::get('/', fn() => Inertia::render('LandingPage/Home'));
@@ -76,6 +77,15 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::post('/reject', [TicketWorkflowController::class, 'reject'])->name('reject');
 
             Route::post('/confirm-disposition', [TicketController::class, 'confirmDisposition'])->name('confirmDisposition');
+        });
+
+        // Catatan Aktivitas
+        Route::prefix('catatan-aktivitas')->name('activity-log.')->group(function () {
+            Route::get('/permohonan', [ActivityLogController::class, 'requestDataLog'])->name('request-data');
+            Route::get('/permohonan/{ticket}', [ActivityLogController::class, 'requestDataLogDetail'])->name('request-data.detail');
+            Route::get('/notifikasi', [ActivityLogController::class, 'notificationLog'])->name('notification');
+            Route::post('/notifikasi/{notification}/retry', [ActivityLogController::class, 'retryNotification'])->name('notification.retry');
+            Route::get('/pengguna', [ActivityLogController::class, 'userLog'])->name('user');
         });
 
         // Backup

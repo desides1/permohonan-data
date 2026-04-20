@@ -35,6 +35,14 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'seksi_id' => $input['seksi_id'] ?? null,
             ])->save();
         }
+
+        activity('user-activity')
+            ->causedBy($user)
+            ->withProperties([
+                'action'     => 'update_profile',
+                'ip_address' => request()->ip(),
+            ])
+            ->log("{$user->name} memperbarui profil.");
     }
 
     /**
@@ -52,5 +60,13 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         ])->save();
 
         $user->sendEmailVerificationNotification();
+
+        activity('user-activity')
+            ->causedBy($user)
+            ->withProperties([
+                'action'     => 'update_profile',
+                'ip_address' => request()->ip(),
+            ])
+            ->log("{$user->name} memperbarui profil.");
     }
 }

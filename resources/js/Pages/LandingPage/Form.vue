@@ -16,12 +16,14 @@ import {
 import { Textarea } from "@/Components/ui/textarea/index.js";
 import { Button } from "@/Components/ui/button/index.js";
 import { CirclePlus, LoaderCircle } from "lucide-vue-next";
-import { ref, computed, watch, reactive } from "vue";
+import { ref, computed, watch, reactive, onBeforeUnmount } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import InputError from "@/Components/InputError.vue";
 
 const isSubmitting = ref(false);
 const showSuccessModal = ref(false);
+const loadingSeconds = ref(0);
+let loadingInterval = null;
 
 const page = usePage();
 const trackingCode = computed(() => page.props.flash?.ticket_code);
@@ -129,6 +131,10 @@ const removeLampiran = (index) => {
     form.lampiran = lampiran.value;
 };
 
+onBeforeUnmount(() => {
+    stopLoadingTimer();
+});
+
 watch(
     () => page.props.flash?.ticket_code,
     (val) => {
@@ -180,7 +186,7 @@ watch(
                         id="name"
                         v-model="form.name"
                         name="name"
-                        class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                        class="border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan nama lengkap anda"
                     />
                     <InputError :message="page.props.errors.name" />
@@ -191,7 +197,7 @@ watch(
                         id="email"
                         v-model="form.email"
                         name="email"
-                        class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                        class="border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan surel anda"
                     />
                     <InputError :message="page.props.errors.email" />
@@ -202,7 +208,7 @@ watch(
                         id="telp"
                         name="telp"
                         v-model="form.telp"
-                        class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                        class="border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan nomor telepon anda"
                     />
                     <InputError :message="page.props.errors.telp" />
@@ -213,7 +219,7 @@ watch(
                         id="postal_code"
                         name="postal_code"
                         v-model="form.postal_code"
-                        class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                        class="border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan kode pos anda"
                     />
                     <InputError :message="page.props.errors.postal_code" />
@@ -224,7 +230,7 @@ watch(
                         rows="5"
                         v-model="form.address"
                         name="address"
-                        class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                        class="border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan alamat lengkap anda"
                     />
                     <InputError :message="page.props.errors.address" />
@@ -236,7 +242,7 @@ watch(
                             id="job"
                             name="job"
                             v-model="form.job"
-                            class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                            class="border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                             placeholder="Masukkan pekerjaan anda"
                         />
                         <InputError :message="page.props.errors.job" />
@@ -247,7 +253,7 @@ watch(
                             id="institute"
                             name="institute"
                             v-model="form.institute"
-                            class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                            class="border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                             placeholder="Masukkan instansi anda"
                         />
                         <InputError :message="page.props.errors.institute" />
@@ -259,7 +265,7 @@ watch(
                         id="tujuan"
                         name="data_purpose"
                         v-model="form.data_purpose"
-                        class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                        class="border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan tujuan penggunaan data anda"
                     />
                     <InputError :message="page.props.errors.data_purpose" />
@@ -283,7 +289,7 @@ watch(
                     <Textarea
                         rows="5"
                         v-model="form.details_data"
-                        class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                        class="border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                         placeholder="Masukkan detail data yang anda butuhkan"
                     />
                     <InputError :message="page.props.errors.details_data" />
@@ -312,10 +318,13 @@ watch(
                     </div>
                     <div>
                         <Label>Cara Penyerahan</Label>
-                        <Select v-model="form.send_doc">
+                        <Select
+                            v-model="form.send_doc"
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                        >
                             <SelectTrigger>
                                 <SelectValue
-                                    class="focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                                    class="border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                                     placeholder="Pilih metode"
                                 />
                             </SelectTrigger>
@@ -344,14 +353,14 @@ watch(
                         <div class="flex w-full">
                             <Input
                                 :value="fileName"
-                                class="cursor-pointer rounded-r-none focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
+                                class="cursor-pointer rounded-r-none border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                                 placeholder="Unggah dokumen anda"
                                 readonly
                                 @click="triggerFileUpload"
                             />
                             <Button
                                 type="button"
-                                class="rounded-l-none bg-lime-300 hover:bg-lime-400"
+                                class="rounded-l-none border border-gray-300 rounded-md shadow-sm bg-lime-300 hover:bg-lime-400"
                                 @click="triggerFileUpload"
                             >
                                 Unggah
@@ -383,14 +392,14 @@ watch(
                             <div class="flex w-full">
                                 <Input
                                     :value="item.fileName"
-                                    class="cursor-pointer rounded-r-none focus:border-green-400 focus:ring-2 focus:ring-green-400"
+                                    class="cursor-pointer rounded-r-none border border-gray-300 rounded-md shadow-sm focus:border-lime-400 focus:ring-2 focus:ring-lime-400"
                                     placeholder="Unggah dokumen anda"
                                     readonly
                                     @click="triggerLampiranUpload(index)"
                                 />
                                 <Button
                                     type="button"
-                                    class="rounded-l-none bg-lime-300 hover:bg-lime-400"
+                                    class="rounded-l-none border border-gray-300 rounded-md shadow-sm bg-lime-300 hover:bg-lime-400"
                                     @click="triggerLampiranUpload(index)"
                                 >
                                     Unggah
@@ -420,7 +429,7 @@ watch(
                         <CirclePlus />
                     </Button>
                 </div>
-                <div class="md:col-span-2 mt-10">
+                <div class="md:col-span-2 mt-10 lg:mt-12 flex justify-end">
                     <Button
                         class="w-full px-24 text-white hover:bg-primary-dark sm:w-auto"
                         type="submit"
@@ -442,17 +451,20 @@ watch(
     <Dialog :open="isSubmitting">
         <DialogOverlay class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
         <DialogContent
-            class="fixed left-1/2 top-1/2 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 pointer-events-none"
+            class="fixed left-1/2 top-1/2 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 pointer-events-none content-center"
         >
             <h3 class="text-lg font-semibold">Permintaan Data</h3>
             <div class="my-6 flex flex-col items-center justify-center gap-4">
-                <LoaderCircle class="h-12 w-12 animate-spin text-primary" />
                 <img
                     src="/images/prosesicon.svg"
                     class="mx-auto my-6 h-32 sm:h-40"
                     alt="loading"
                 />
             </div>
+
+            <LoaderCircle
+                class="h-12 w-12 animate-spin text-primary text-center"
+            />
             <p class="text-center text-sm text-muted-foreground">
                 Sedang Mengirim Data ...
             </p>
@@ -485,7 +497,10 @@ watch(
             <p class="mt-3 text-center text-xs text-muted-foreground">
                 Periksa email anda atau hubungi no. 000000000
             </p>
-            <Button class="mt-6 w-full" @click="showSuccessModal = false">
+            <Button
+                class="mt-6 w-full text-white hover:bg-primary-dark sm:w-auto"
+                @click="showSuccessModal = false"
+            >
                 Selesai
             </Button>
         </DialogContent>

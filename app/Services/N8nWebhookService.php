@@ -67,9 +67,51 @@ class N8nWebhookService
      */
     public function dispatchBatch(array $notifications): void
     {
-        foreach ($notifications as $notification) {
-            $this->dispatch($notification);
+        if (empty($notifications)) return;
+
+        if (empty($this->webhookUrl)) {
+            Log::warning('N8N webhook URL not configured. Batch notifications saved to DB only.', [
+                'count' => count($notifications),
+            ]);
+            return;
         }
+
+        try {
+            $payload = [
+                'notifications' => array_map(
+                    fn(NotificationLog $notification) => $this->buildPayload($notification),
+                    $notifications
+                ),
+                'count' => count($notifications),
+            ];
+
+            $response = Http::timeout($this->timeout)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'X-Webhook-Secret' => config('services.n8n.webhook_secret', ''),
+                ])
+                ->post($this->webhookUrl, $payload);
+
+            if ($response->successful()) {
+                Log::info('N8N batch webhook dispatched successfully.', [
+                    'count' => count($notifications),
+                ]);
+            } else {
+                Log::error('N8N batch webhook returned error.', [
+                    // 'count' => count($notifications),
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('N8N batch webhook dispatch failed.', [
+                'count' => count($notifications),
+                'error' => $e->getMessage(),
+            ]);
+        }
+        // foreach ($notifications as $notification) {
+        //     $this->dispatch($notification);
+        // }
     }
 
     private function buildPayload(NotificationLog $notification): array

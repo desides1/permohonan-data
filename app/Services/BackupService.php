@@ -31,7 +31,7 @@ class BackupService
 
             // Jalankan spatie backup
             $exitCode = Artisan::call('backup:run', [
-                '--disable-notifications' => true,
+                '--only-files' => true,
             ]);
 
             if ($exitCode !== 0) {

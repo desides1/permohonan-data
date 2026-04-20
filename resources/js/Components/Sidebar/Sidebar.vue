@@ -80,7 +80,7 @@ const filteredMenu = computed(() =>
                         <Link
                             v-for="child in item.children"
                             :key="child.label"
-                            :href="item.route ? route(child.route) : '#'"
+                            :href="child.route ? route(child.route) : '#'"
                             class="submenu-item"
                             @click="closeSidebar && closeSidebar()"
                         >

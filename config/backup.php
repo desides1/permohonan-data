@@ -32,8 +32,8 @@ return [
                  * The list of directories and files that will be included in the backup.
                  */
                 'include' => [
-                    base_path(),
-                    storage_path('app/uploads'),  // Include if you use zero downtime deployments and don't follow symlinks
+
+                    storage_path('app/public/attachments'),  // Include if you use zero downtime deployments and don't follow symlinks
                 ],
 
                 /*
@@ -45,7 +45,7 @@ return [
                     base_path('vendor'),
                     base_path('node_modules'),
                     storage_path('framework'),
-                    storage_path('app/public'),
+
                     storage_path('app/private'),
                     storage_path('app/backup-temp'),
                 ],

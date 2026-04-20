@@ -161,7 +161,7 @@ onBeforeUnmount(() => {
                         <h3 class="text-lg font-semibold">Media Sosial</h3>
                         <div class="mt-4 flex gap-4 text-white/80">
                             <a
-                                href="#"
+                                href="https://www.facebook.com/bpkhwilayah.ix.9/"
                                 class="hover:text-green-300"
                                 aria-label="Facebook"
                             >
@@ -175,21 +175,21 @@ onBeforeUnmount(() => {
                                 </svg>
                             </a>
                             <a
-                                href="#"
+                                href="https://www.youtube.com/@bpkhixambon"
                                 class="hover:text-green-300"
-                                aria-label="X"
+                                aria-label="YouTube"
                             >
                                 <svg
                                     class="h-6 w-6 fill-current"
                                     viewBox="0 0 24 24"
                                 >
                                     <path
-                                        d="M18.15 2H21l-6.52 7.45L22 22h-6.95l-4.34-5.68L5.7 22H3l6.98-7.98L2 2h7.09l3.91 5.19L18.15 2Zm-1.22 18h1.93L7.14 4h-2L16.93 20Z"
+                                        d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
                                     />
                                 </svg>
                             </a>
                             <a
-                                href="#"
+                                href="https://www.instagram.com/bpkh9ambon?igsh=MTdieTE1eWYxYnIzYw=="
                                 class="hover:text-green-300"
                                 aria-label="Instagram"
                             >

@@ -15,13 +15,13 @@ export const sidebarMenu = [
         children: [
             {
                 label: "Aktivitas Permohonan Data",
-                href: "#",
+                route: "admin.activity-log.request-data",
             },
             {
                 label: "Aktivitas Notifikasi",
-                href: "#",
+                route: "admin.activity-log.notification",
             },
-            { label: "Aktivitas Pengguna", href: "#" },
+            { label: "Aktivitas Pengguna", route: "admin.activity-log.user" },
         ],
     },
     {
