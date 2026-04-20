@@ -334,11 +334,23 @@ class TicketController extends Controller
                         ->orWhere('name', 'like', "%{$request->search}%");
                 });
             })
+            ->when($request->read === 'read', function ($query) {
+                $query->whereHas('ticketProgress', fn($q) => $q->where('is_read', true));
+            })
+            ->when($request->read === 'unread', function ($query) {
+                $query->whereHas('ticketProgress', fn($q) => $q->where('is_read', false));
+            })
 
             ->when($request->status, function ($query) use ($request) {
                 $query->whereHas('ticketProgress', function ($q) use ($request) {
                     $q->where('status', $request->status);
                 });
+            })
+            ->when($request->date_from, function ($query) use ($request) {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            })
+            ->when($request->date_to, function ($query) use ($request) {
+                $query->whereDate('created_at', '<=', $request->date_to);
             })
             ->when(
                 $request->sort === 'oldest',
@@ -346,6 +358,7 @@ class TicketController extends Controller
                 fn($q) => $q->latest(),
             )
             ->paginate(10)
+            ->withQueryString()
             ->through(fn($ticket) => [
                 'ticket_code'        => $ticket->ticket_code,
                 'name'               => $ticket->name,
@@ -359,7 +372,7 @@ class TicketController extends Controller
 
         return Inertia::render('Admin/DataPermohonan/Index', [
             'tickets'  => $tickets,
-            'filters'  => $request->only('status', 'search', 'sort'),
+            'filters'  => $request->only('status', 'search', 'sort', 'read', 'date_from', 'date_to'),
             'userRole' => $role,
         ]);
     }

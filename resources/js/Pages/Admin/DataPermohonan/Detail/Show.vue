@@ -201,7 +201,20 @@ const isSeksiViewingReview = computed(() => {
                         v-if="ticket.ticket_progress?.current_assignment_label"
                         class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700"
                     >
-                        📌
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-3.5 h-3.5 inline-block text-blue-600 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-4 4h4"
+                            />
+                        </svg>
                         {{ ticket.ticket_progress.current_assignment_label }}
                     </span>
                 </div>
@@ -237,7 +250,21 @@ const isSeksiViewingReview = computed(() => {
                         <h3
                             class="text-sm sm:text-base font-bold text-orange-800"
                         >
-                            ⚠️ Perlu Revisi dari Pimpinan
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="w-4 h-4 inline-block text-orange-600 mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+                            Perlu Revisi dari Pimpinan
                         </h3>
                         <p class="text-xs text-orange-600 mt-0.5">
                             Pimpinan meminta Anda untuk merevisi dokumen yang
@@ -274,17 +301,59 @@ const isSeksiViewingReview = computed(() => {
                             <span
                                 class="inline-flex items-center gap-1 bg-orange-100 rounded-full px-3 py-1"
                             >
-                                1️⃣ Hapus dokumen lama jika perlu
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="w-3.5 h-3.5 inline-block text-orange-600"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                                Hapus dokumen lama jika perlu
                             </span>
                             <span
                                 class="inline-flex items-center gap-1 bg-orange-100 rounded-full px-3 py-1"
                             >
-                                2️⃣ Upload dokumen yang sudah diperbaiki
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="w-3.5 h-3.5 inline-block text-orange-600"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                                Upload dokumen yang sudah diperbaiki
                             </span>
                             <span
                                 class="inline-flex items-center gap-1 bg-orange-100 rounded-full px-3 py-1"
                             >
-                                3️⃣ Klik "Minta Review Pimpinan"
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="w-3.5 h-3.5 inline-block text-orange-600"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                                Klik "Minta Review Pimpinan"
                             </span>
                         </div>
                     </div>
@@ -422,7 +491,21 @@ const isSeksiViewingReview = computed(() => {
                     class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4"
                 >
                     <h2 class="font-semibold text-gray-800">
-                        📁 Dokumen Hasil Permohonan
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-5 h-5 inline-block text-gray-600 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M9 12h6m-3-3v6m5 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
+                        Dokumen Hasil Permohonan
                     </h2>
                     <div class="flex flex-wrap items-center gap-2">
                         <DialogUploadData
@@ -477,7 +560,7 @@ const isSeksiViewingReview = computed(() => {
                             {{
                                 isRequestingReview
                                     ? "Mengirim..."
-                                    : "📤 Minta Review Pimpinan"
+                                    : "Minta Review Pimpinan"
                             }}
                         </button>
                     </div>
@@ -528,14 +611,42 @@ const isSeksiViewingReview = computed(() => {
                                 "
                                 class="rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100 transition-colors whitespace-nowrap"
                             >
-                                ⬇️ Unduh
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="w-3.5 h-3.5 inline-block"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                    />
+                                </svg>
+                                Unduh
                             </a>
                             <button
                                 v-if="can.deleteDocument"
                                 @click="deleteDocument(doc.id)"
                                 class="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
                             >
-                                🗑️ Hapus
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="w-3.5 h-3.5 inline-block"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                    />
+                                </svg>
+                                Hapus
                             </button>
                         </div>
                     </div>
@@ -578,7 +689,7 @@ const isSeksiViewingReview = computed(() => {
                     </div>
                 </div>
             </section>
-            <div
+            <!-- <div
                 class="rounded-lg border-2 border-red-400 bg-red-50 p-4 text-xs font-mono"
             >
                 <p><strong>DEBUG INFO (hapus setelah fix)</strong></p>
@@ -591,7 +702,7 @@ const isSeksiViewingReview = computed(() => {
                 <p>can.finalize: {{ can.finalize }}</p>
                 <p>showReviewSection: {{ showReviewSection }}</p>
                 <p>isReviewPhase: {{ isReviewPhase }}</p>
-            </div>
+            </div> -->
             <ReviewDocumentSection
                 v-if="showReviewSection"
                 :ticket="ticket"
@@ -603,7 +714,7 @@ const isSeksiViewingReview = computed(() => {
             <hr class="my-6 border-gray-300" />
 
             <!-- Catatan -->
-            <section class="rounded-xl border bg-white p-6">
+            <!-- <section class="rounded-xl border bg-white p-6">
                 <h2 class="mb-3 font-semibold text-gray-800">
                     Catatan Untuk Pemohon (Opsional)
                 </h2>
@@ -612,10 +723,10 @@ const isSeksiViewingReview = computed(() => {
                     placeholder="Tuliskan catatan"
                     class="w-full rounded-lg border-gray-300 focus:ring-green-600 focus:border-green-600 text-sm"
                 ></textarea>
-            </section>
+            </section> -->
 
             <!-- Riwayat Aktivitas -->
-            <section
+            <!-- <section
                 v-if="activities && activities.length > 0"
                 class="rounded-xl border bg-white p-4 sm:p-6"
             >
@@ -658,7 +769,7 @@ const isSeksiViewingReview = computed(() => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section> -->
 
             <!-- Action Buttons -->
             <div
@@ -670,7 +781,21 @@ const isSeksiViewingReview = computed(() => {
                     @click="openDialog('verify')"
                     class="rounded-lg bg-green-600 px-4 sm:px-6 py-2 text-white hover:bg-green-700 text-sm font-medium transition-colors"
                 >
-                    ✅ Verifikasi
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 inline-block mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M5 13l4 4L19 7"
+                        />
+                    </svg>
+                    Verifikasi
                 </button>
 
                 <button
@@ -678,7 +803,21 @@ const isSeksiViewingReview = computed(() => {
                     @click="openDialog('approve')"
                     class="rounded-lg bg-green-600 px-6 py-2 text-white hover:bg-green-700 text-sm font-medium transition-colors"
                 >
-                    ✅ Setujui
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 inline-block mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M5 13l4 4L19 7"
+                        />
+                    </svg>
+                    Setujui
                 </button>
 
                 <button
@@ -686,7 +825,21 @@ const isSeksiViewingReview = computed(() => {
                     @click="openDialog('assign')"
                     class="rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 text-sm font-medium transition-colors"
                 >
-                    📋 Disposisi ke Seksi
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 inline-block mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M3 15a4 4 0 004 4h12a4 4 0 004-4v-1M3 15a4 4 0 014-4h.88c.508 0 .964-.26 1.23-.68l.54-.9A2.993 2.993 0 0113.38 11h2.62a4 4 0 014 4v1m-9-6h.01M15 11h.01M12 17h.01M15 17h.01M18 17h.01"
+                        />
+                    </svg>
+                    Disposisi ke Seksi
                 </button>
 
                 <button
@@ -694,6 +847,20 @@ const isSeksiViewingReview = computed(() => {
                     @click="openDialog('markReady')"
                     class="rounded-lg bg-cyan-600 px-4 sm:px-6 py-2 text-white hover:bg-cyan-700 text-sm font-medium transition-colors"
                 >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 inline-block mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                    </svg>
                     Selesaikan dan publish
                 </button>
 
@@ -702,7 +869,21 @@ const isSeksiViewingReview = computed(() => {
                     @click="openDialog('finalize')"
                     class="rounded-lg bg-green-700 px-4 sm:px-6 py-2 text-white hover:bg-green-800 text-sm font-medium transition-colors"
                 >
-                    🎉 Selesaikan & Publish
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 inline-block mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                    </svg>
+                    Selesaikan & Publish
                 </button>
 
                 <button
@@ -710,7 +891,21 @@ const isSeksiViewingReview = computed(() => {
                     @click="openDialog('reject')"
                     class="rounded-lg border border-red-500 px-4 sm:px-6 py-2 text-red-600 hover:bg-red-50 text-sm font-medium transition-colors"
                 >
-                    ❌ Tolak
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 inline-block mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                    Tolak
                 </button>
             </div>
         </div>

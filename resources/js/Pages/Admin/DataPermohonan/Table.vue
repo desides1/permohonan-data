@@ -190,19 +190,28 @@ function confirmDelete(ticketCode) {
             </span>
 
             <div class="flex gap-1">
-                <Link
+                <template
                     v-for="link in props.tickets.links"
-                    :key="link.label"
-                    :href="link.url ?? '#'"
-                    class="px-3 py-1 rounded border text-xs"
-                    :class="{
-                        'bg-green-600 text-white border-green-600': link.active,
-                        'hover:bg-gray-50': !link.active && link.url,
-                        'text-gray-300 cursor-not-allowed': !link.url,
-                    }"
-                    v-html="link.label"
-                    :preserve-scroll="true"
-                />
+                    :key="`${link.label}-${link.url ?? 'disabled'}`"
+                >
+                    <span
+                        v-if="!link.url"
+                        class="px-3 py-1 rounded border text-xs text-gray-300 cursor-not-allowed"
+                        v-html="link.label"
+                    />
+                    <Link
+                        v-else
+                        :href="link.url"
+                        class="px-3 py-1 rounded border text-xs"
+                        :class="{
+                            'bg-green-600 text-white border-green-600':
+                                link.active,
+                            'hover:bg-gray-50': !link.active,
+                        }"
+                        v-html="link.label"
+                        :preserve-scroll="true"
+                    />
+                </template>
             </div>
         </div>
     </div>
